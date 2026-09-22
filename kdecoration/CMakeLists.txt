@@ -1,4 +1,4 @@
-add_definitions(-DTRANSLATION_DOMAIN="breeze_kwin_deco")
+add_definitions(-DTRANSLATION_DOMAIN="azrah_kwin_deco")
 
 ################# includes #################
 include_directories(${CMAKE_SOURCE_DIR}/libbreezecommon)
@@ -20,7 +20,7 @@ add_library(breezedecoration MODULE
     ${breezedecoration_config_PART_FORMS_HEADERS})
 
 set_target_properties(breezedecoration PROPERTIES
-    OUTPUT_NAME org.kde.breeze
+    OUTPUT_NAME io.github.carterjandrew.azrah
 )
 
 target_link_libraries(breezedecoration
@@ -36,8 +36,16 @@ target_link_libraries(breezedecoration
         KF6::ColorScheme
 )
 
+# The named decoration style API was added after Plasma 6.7. Keep Azrah
+# buildable on the previous KDecoration3 API; that version never requests the
+# newer shadow-only style.
+if(KDecoration3_VERSION VERSION_GREATER_EQUAL "6.8.0")
+    target_compile_definitions(breezedecoration PRIVATE AZRAH_HAVE_KDECORATION_STYLE=1)
+else()
+    target_compile_definitions(breezedecoration PRIVATE AZRAH_HAVE_KDECORATION_STYLE=0)
+endif()
+
 install(TARGETS breezedecoration DESTINATION ${KDE_INSTALL_PLUGINDIR}/${KDECORATION_PLUGIN_DIR})
-install(FILES breezesettingsdata.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME breeze-decoration.kcfg)
+install(FILES breezesettingsdata.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME azrah-decoration.kcfg)
 
 add_subdirectory(config)
-

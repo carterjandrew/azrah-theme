@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Description": "Configure the Azrah window decoration",
+        "Icon": "preferences-system-windows",
+        "License": "GPL-2.0-or-later",
+        "Name": "Azrah Window Decoration",
+        "ServiceTypes": [
+            "KCModule"
+        ],
+        "Version": "0.1.0",
+        "Website": "https://github.com/carterjandrew/my-kde-theme"
+    },
+    "X-KDE-Keywords": "azrah,decoration",
+    "X-KDE-ParentApp": "kcontrol",
+    "X-KDE-Weight": 60
+}

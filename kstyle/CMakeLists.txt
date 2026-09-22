@@ -59,6 +59,7 @@ kconfig_add_kcfg_files(breeze_PART_SRCS breezestyleconfigdata.kcfgc)
 
 
 add_library(breeze${QT_MAJOR_VERSION} MODULE ${breeze_PART_SRCS})
+set_target_properties(breeze${QT_MAJOR_VERSION} PROPERTIES OUTPUT_NAME azrah${QT_MAJOR_VERSION})
 
 ecm_qt_declare_logging_category(breeze${QT_MAJOR_VERSION}
     HEADER
@@ -66,7 +67,7 @@ ecm_qt_declare_logging_category(breeze${QT_MAJOR_VERSION}
     IDENTIFIER
         BREEZE
     CATEGORY_NAME
-        breeze${QT_MAJOR_VERSION}
+        azrah${QT_MAJOR_VERSION}
     DEFAULT_SEVERITY
         Warning
 )
@@ -121,8 +122,8 @@ endif()
 
 ########### install files ###############
 install(TARGETS breeze${QT_MAJOR_VERSION}  DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/styles/)
-install(FILES breeze.themerc  DESTINATION  ${KDE_INSTALL_DATADIR}/kstyle/themes)
-install(FILES breeze.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR})
+install(FILES azrah.themerc DESTINATION ${KDE_INSTALL_DATADIR}/kstyle/themes)
+install(FILES breeze.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME azrah.kcfg)
 
 ########### subdirectories ###############
 

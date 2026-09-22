@@ -34,7 +34,7 @@
 #include <QTextStream>
 #include <QTimer>
 
-K_PLUGIN_FACTORY_WITH_JSON(BreezeDecoFactory, "breeze.json", registerPlugin<Breeze::Decoration>(); registerPlugin<Breeze::Button>();)
+K_PLUGIN_FACTORY_WITH_JSON(BreezeDecoFactory, "azrah.json", registerPlugin<Breeze::Decoration>(); registerPlugin<Breeze::Button>();)
 
 namespace
 {
@@ -299,9 +299,11 @@ void Decoration::updateAnimationState()
 //________________________________________________________________
 qreal Decoration::borderSize(bool bottom, qreal scale) const
 {
+#if AZRAH_HAVE_KDECORATION_STYLE
     if (style() == KDecoration3::Style::Shadow) {
         return 0;
     }
+#endif
 
     const qreal pixelSize = KDecoration3::pixelSize(scale);
     const qreal baseSize = std::max<qreal>(pixelSize, KDecoration3::snapToPixelGrid(settings()->smallSpacing(), scale));

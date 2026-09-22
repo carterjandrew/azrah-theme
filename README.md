@@ -1,43 +1,33 @@
-# Breeze
+# Azrah
 
-Breeze is the default style for [Plasma](https://kde.org/plasma-desktop/). This repository contains some parts of Breeze such as the cursors, wallpapers, and the application style.
+Azrah is a sharp, restrained KDE application style and KWin decoration derived from KDE's Breeze. It keeps Breeze's integration with KDE system colors while moving toward square geometry, clear borders, and simple two-tone interaction states.
 
-## Components
+The project is early in development. The current milestone establishes a collision-free identity and a repeatable development workflow; the visual work comes next.
 
-This repository contains many parts of Breeze, such as:
+## Quick start
 
-* Color schemes, located under [/colors](/colors).
-* Cursors, located under [/cursors](/cursors).
-* Window decorations, located under [/kdecoration](/kdecoration).
-* Application style, located under [/kstyle](/kstyle).
-* Wallpapers, located under [/wallpapers](/wallpapers).
+```sh
+./scripts/dev doctor
+./scripts/dev configure
+./scripts/dev build
+./scripts/dev test
+./scripts/dev install
+```
 
-### See Also
+The development preset builds the Qt 6 widget style and KWin decoration. It intentionally excludes the inherited Breeze colors, cursors, wallpapers, Qt 5 style, and miscellaneous utilities.
 
-If you can't find what you're looking for, it may exist in another repository instead:
+The install command uses `~/.local`, refreshes KDE's service cache, and configures the user Qt plugin path. Log out and back in after the first install, then select **Azrah** under **System Settings → Colors & Themes → Application Style** and **Window Decorations**.
 
-* [Breeze Icons](https://invent.kde.org/frameworks/breeze-icons) contains the icon set used in Plasma.
-* [libplasma](https://invent.kde.org/plasma/libplasma/-/tree/master/src/desktoptheme) includes the [Plasma Style](https://develop.kde.org/docs/plasma/theme/) that affects the visuals for the Plasma panel and widgets.
-* The [Breeze SDDM theme](https://invent.kde.org/plasma/plasma-desktop/-/tree/master/sddm-theme) lives within the Plasma Desktop repository, adjacent to the lock screen.
-* [Plasma Workspace Wallpapers](https://invent.kde.org/plasma/plasma-workspace-wallpapers) contains the rest of the default wallpapers shipped with Plasma.
-* [Breeze for GTK](https://invent.kde.org/plasma/breeze-gtk) is the Breeze [GTK](https://gtk.org/) theme.
-* [QQC2 Desktop Style](https://invent.kde.org/frameworks/qqc2-desktop-style) is the default [Qt Quick Controls](https://doc.qt.io/qt-6/qtquickcontrols-index.html) style for desktop KDE applications. It draws controls in QtQuick-based apps using the current application style. If you're using KDE apps on Plasma or another Linux desktop, you're most likely using it.
-* [Breeze Style for QQC2](https://invent.kde.org/plasma/qqc2-breeze-style) is a Qt Quick Controls style that mimics the visual styling of Breeze specifically. If you're using KDE apps on Android or Plasma Mobile, you're most likely using it.
+To remove only the files recorded by the development install:
 
-## Building
+```sh
+./scripts/dev uninstall
+```
 
-The easiest way to make changes and test Breeze during development is to [build it with kde-builder](https://develop.kde.org/docs/getting-started/building).
+See [Development](docs/development.md) for dependencies, troubleshooting, and the upstream workflow. See [Design direction](docs/design.md) for the visual principles and decision log.
 
-When building Breeze manually, keep in mind that the Qt5 and Qt6 versions will be built by default. To control which versions are built, use the `BUILD_QT5` and `BUILD_QT6` CMake variables.
+## Relationship to Breeze
 
-## Contributing
+Azrah preserves many internal Breeze filenames, targets, and C++ namespaces. This is deliberate: public and installed identifiers use Azrah, while internal continuity makes it easier to review changes and incorporate useful fixes from upstream.
 
-Like other projects in the KDE ecosystem, contributions are welcome from all. This repository is managed in [KDE Invent](https://invent.kde.org/plasma/breeze), our GitLab instance.
-
-* Want to contribute code? See the [GitLab wiki page](https://community.kde.org/Infrastructure/GitLab) for a tutorial on how to send a merge request.
-* Reporting a bug? Please submit it on the [KDE Bugtracking System](https://bugs.kde.org/enter_bug.cgi?format=guided&product=breeze). Please do not use the Issues
-tab to report bugs.
-* Is there a part of Breeze that's not translated? See the [Getting Involved in Translation wiki page](https://community.kde.org/Get_Involved/translation) to see how
-you can help translate!
-
-If you get stuck or need help with anything at all, head over to the [KDE New Contributors room](https://go.kde.org/matrix/#/#kde-welcome:kde.org) on Matrix. For questions about Breeze, please ask in the [KDE Development room](https://go.kde.org/matrix/#/#kde-devel:kde.org). See [Matrix](https://community.kde.org/Matrix) for more details.
+KDE Breeze is developed at <https://invent.kde.org/plasma/breeze>. Original copyrights and SPDX license declarations are retained. Azrah remains distributed under the licenses declared by each source file and in `LICENSES/`.

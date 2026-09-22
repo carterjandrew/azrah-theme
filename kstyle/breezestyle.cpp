@@ -273,18 +273,18 @@ Style::Style()
 #endif
 {
 #if HAVE_QTDBUS
-    // use DBus connection to update on breeze configuration change
+    // Use D-Bus to update on Azrah configuration changes.
     auto dbus = QDBusConnection::sessionBus();
     dbus.connect(QString(),
-                 QStringLiteral("/BreezeStyle"),
-                 QStringLiteral("org.kde.Breeze.Style"),
+                 QStringLiteral("/AzrahStyle"),
+                 QStringLiteral("io.github.carterjandrew.Azrah.Style"),
                  QStringLiteral("reparseConfiguration"),
                  this,
                  SLOT(configurationChanged()));
 
     dbus.connect(QString(),
-                 QStringLiteral("/BreezeDecoration"),
-                 QStringLiteral("org.kde.Breeze.Style"),
+                 QStringLiteral("/AzrahDecoration"),
+                 QStringLiteral("io.github.carterjandrew.Azrah.Style"),
                  QStringLiteral("reparseConfiguration"),
                  this,
                  SLOT(configurationChanged()));
