@@ -44,5 +44,11 @@ Each stable decision should state the date, affected components, decision, color
 
 - By default, the visible outline follows KDE's effective Window Border Size, including per-window overrides. `None` and `No Sides` therefore omit the outline.
 - Azrah recommends KDE's `Normal` border size so a visible, deliberate frame is the default while the user's global choice remains authoritative.
-- An optional 1–32 logical-pixel override controls only the painted outline. It is DPI-scaled and does not alter window geometry, resize margins, or per-window border settings.
+- An optional 1–32 logical-pixel override controls the outline width.
 - Disabled outlines and maximized windows remain outline-free regardless of the width override.
+
+### 2026-09-22 — Inset frame geometry
+
+- The outline is painted inside the decoration margins, so its full width is included in the window geometry used by tiling layouts and does not consume surrounding gaps.
+- A manual width override reserves at least the same DPI-scaled decoration margin. It does not change the configured KDE or per-window border-size value.
+- Square mode uses rectangular, non-antialiased frame and shadow masks. Rounded painting remains available only through the explicit Rounded Corners option.

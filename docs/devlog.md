@@ -36,4 +36,19 @@ Corner radius is treated as a single geometry decision across painting, composit
 
 The decoration outline now derives its automatic thickness from the effective side-border calculation rather than a fixed one-pixel value. Reusing `borderSize(false, scale)` is important: it preserves KWin's global border size, Azrah's per-window exception mask, fractional scaling, and the zero-width meaning of both `None` and `No Sides`.
 
-The manual outline-width setting is intentionally separate from decoration borders. It changes only `KDecoration3::BorderOutline`; layout margins and invisible resize-only borders continue to follow KWin. Values are stored as logical pixels and snapped to the output scale when painted.
+The manual outline-width setting initially changed only `KDecoration3::BorderOutline`; layout margins and invisible resize-only borders continued to follow KWin. Values were stored as logical pixels and snapped to the output scale when painted.
+
+## 2026-09-22 — External outlines consumed tiling gaps
+
+### Symptoms
+
+- Thick outlines expanded beyond the geometry assigned to windows by a tiling layout, consuming part of the intended gap.
+- Larger outlines exposed subtly rounded corners even when Azrah's Rounded Corners option was disabled.
+
+### Cause
+
+`KDecoration3::BorderOutline` is compositor-owned and rendered outside the decorated window. Its pixels are not part of the decoration margins reported to tiling layouts, and its rendering path is separate from Azrah's square frame painting.
+
+### Resolution
+
+Azrah now keeps the compositor outline empty and paints the focus border into real decoration margins. Automatic width reuses the effective KDE side-border size. A manual override reserves at least its DPI-scaled width in the decoration geometry, so its full painted area is included in tiling calculations. Square mode uses non-antialiased rectangular fills and a rectangular shadow cutout; only the explicit Rounded Corners option enables curved paths.

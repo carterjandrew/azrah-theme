@@ -332,7 +332,7 @@
        <item row="6" column="0" colspan="2">
         <widget class="QLabel" name="customOutlineWidthHelpLabel">
          <property name="text">
-          <string>Controls only the visible outline. Window geometry and resize margins still follow KDE's Window Border Size setting.</string>
+          <string>Sets the visible outline and reserves matching space inside the window frame. Automatic width follows KDE's Window Border Size setting.</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

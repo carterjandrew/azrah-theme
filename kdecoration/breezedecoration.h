@@ -68,6 +68,7 @@ public:
     //@{
     QColor titleBarColor() const;
     QColor fontColor() const;
+    QColor outlineColor() const;
     //@}
 
     //*@name maximization modes
@@ -102,6 +103,7 @@ private:
 
     void createButtons();
     void paintTitleBar(QPainter *painter, const QRectF &repaintRegion);
+    void paintOutline(QPainter *painter, const QRectF &repaintRegion);
     void updateShadow();
     std::shared_ptr<KDecoration3::DecorationShadow> createShadowObject(const float strengthScale);
     void setScaledCornerRadius();
