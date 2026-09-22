@@ -30,7 +30,7 @@ The exact minimum versions are kept in the top-level CMake configuration. On oth
 ./scripts/dev uninstall   # remove exactly the files in the install manifests
 ```
 
-Set `AZRAH_INSTALL_PREFIX` before `configure` to use a prefix other than `~/.local`. For a custom prefix, add its `lib/qt6/plugins` directory to `QT_PLUGIN_PATH` before launching test applications.
+Set `AZRAH_INSTALL_PREFIX` before `configure` to use a prefix other than `~/.local`. The install helper derives the Qt plugin directory from CMake's install manifest; do not assume a distro-specific path such as `lib/qt6/plugins`. For a custom prefix, the helper prints the exact directory to add to `QT_PLUGIN_PATH`.
 
 The first default-prefix install creates `~/.config/environment.d/azrah.conf`. A full logout/login is required for Plasma to inherit it. Uninstall removes that file and CMake-installed files, but deliberately leaves directories and user settings intact.
 
@@ -49,7 +49,7 @@ Development scripts do not restart or replace KWin. After installing a decoratio
 ## Troubleshooting
 
 - If configuration reports ECM missing, install `extra-cmake-modules` (it is missing on the original development machine at the time of writing).
-- If Azrah is absent from Application Style, confirm `~/.local/lib/qt6/plugins` is in `QT_PLUGIN_PATH` and start a new login session.
+- If Azrah is absent from Application Style, compare `QT_PLUGIN_PATH` with the “Qt plugin directory” printed by `./scripts/dev install`, then start a new login session.
 - If metadata looks stale, run `kbuildsycoca6`.
 - If an application does not refresh after saving, restart it while investigating the Azrah D-Bus reload signal.
 - If the desktop becomes difficult to use, choose Breeze again. `./scripts/dev uninstall` does not touch Breeze.

@@ -24,7 +24,7 @@ To remove only the files recorded by the development install:
 ./scripts/dev uninstall
 ```
 
-See [Development](docs/development.md) for dependencies, troubleshooting, and the upstream workflow. See [Design direction](docs/design.md) for the visual principles and decision log.
+See [Development](docs/development.md) for dependencies, troubleshooting, and the upstream workflow. See [Design direction](docs/design.md) for visual principles and the [development log](docs/devlog.md) for notable implementation findings.
 
 ## Relationship to Breeze
 

@@ -56,20 +56,46 @@ test_build() {
     ctest --preset dev
 }
 
+installed_plugin_dir() {
+    local manifest="$build_dir/install_manifest.txt"
+    local style_plugin
+
+    [[ -f "$manifest" ]] || {
+        printf 'No install manifest found at %s.\n' "$manifest" >&2
+        return 1
+    }
+
+    style_plugin=$(sed -n '/\/styles\/azrah6\.so$/p' "$manifest" | head -n 1)
+    [[ -n "$style_plugin" ]] || {
+        printf 'The install manifest does not contain the Azrah style plugin.\n' >&2
+        return 1
+    }
+
+    style_plugin=$(dirname -- "$(dirname -- "$style_plugin")")
+    case "$style_plugin" in
+        "$install_prefix"/*) printf '%s\n' "$style_plugin" ;;
+        *) printf 'Plugin directory is outside %s: %s\n' "$install_prefix" "$style_plugin" >&2; return 1 ;;
+    esac
+}
+
 install_build() {
+    local plugin_dir
+
     build
     cmake --install "$build_dir"
+    plugin_dir=$(installed_plugin_dir)
 
     if [[ "$install_prefix" == "${HOME}/.local" ]]; then
         mkdir -p -- "$(dirname -- "$environment_file")"
-        printf 'QT_PLUGIN_PATH=%s/lib/qt6/plugins${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}\n' "$install_prefix" >"$environment_file"
+        printf 'QT_PLUGIN_PATH=%s${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}\n' "$plugin_dir" >"$environment_file"
         printf '%s\n' "$environment_file" >"$build_dir/azrah-extra-install-manifest.txt"
     else
-        printf 'Custom prefix installed. Add %s/lib/qt6/plugins to QT_PLUGIN_PATH.\n' "$install_prefix"
+        printf 'Custom prefix installed. Add %s to QT_PLUGIN_PATH.\n' "$plugin_dir"
     fi
 
     command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6
-    printf '\nAzrah installed in %s. Log out and back in after the first install so Plasma inherits QT_PLUGIN_PATH.\n' "$install_prefix"
+    printf '\nAzrah installed in %s. Qt plugin directory: %s\n' "$install_prefix" "$plugin_dir"
+    printf 'Log out and back in after the first install so Plasma inherits QT_PLUGIN_PATH.\n'
 }
 
 uninstall_build() {
