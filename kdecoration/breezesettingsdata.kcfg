@@ -40,7 +40,7 @@
     </entry>
 
     <entry name="RoundedCorners" type = "Bool">
-      <default>true</default>
+      <default>false</default>
     </entry>
   </group>
 
@@ -101,7 +101,7 @@
 
     <!-- hide title bar -->
     <entry name="HideTitleBar" type = "Bool">
-       <default>false</default>
+       <default>true</default>
     </entry>
 
     <!-- window specific settings -->

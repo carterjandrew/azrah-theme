@@ -32,3 +32,10 @@ Each stable decision should state the date, affected components, decision, color
 - Primary scope: Qt 6 widget style and KWin decoration.
 - Internal Breeze source names and namespaces remain where they do not leak into installed identity, preserving a practical path for upstream fixes.
 - Inherited Breeze colors, cursors, wallpapers, translations, and utilities are disabled until they receive distinct Azrah identities and a design review.
+
+### 2026-09-21 — Boxy focus-frame decoration
+
+- Window geometry is square by default; Breeze-style rounding remains an explicit option and applies consistently to the frame, titlebar, outline, and shadow.
+- Titlebars are hidden by default for a tiling-window-manager character, but remain globally configurable and overridable through Breeze-compatible per-window exceptions.
+- Active windows use a one-pixel KDE system-highlight outline. Inactive windows retain a one-pixel neutral system-derived outline.
+- Maximized windows omit the outline at screen edges. Shadows, invisible resize margins, and user-selected border sizes remain supported.

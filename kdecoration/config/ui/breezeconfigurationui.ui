@@ -166,9 +166,46 @@
        <item row="6" column="1">
         <widget class="QCheckBox" name="roundedCorners">
          <property name="text">
-          <string>Round bottom corners of windows with no borders</string>
+          <string>Use rounded window corners</string>
          </property>
         </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="hideTitleBar">
+         <property name="text">
+          <string>Hide titlebar</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <layout class="QHBoxLayout" name="hideTitleBarHelpLayout">
+         <item>
+          <spacer name="hideTitleBarHelpSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Policy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>25</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="hideTitleBarHelpLabel">
+           <property name="text">
+            <string>Hiding the titlebar removes the caption, window buttons, and normal drag area. Use Meta+drag, keyboard shortcuts, or a window-specific exception when needed.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

@@ -130,7 +130,7 @@ private:
     qreal m_shadowOpacity = 0;
 
     //*frame corner radius, scaled according to DPI
-    qreal m_scaledCornerRadius = 3;
+    qreal m_scaledCornerRadius = 0;
 };
 
 bool Decoration::hasBorders() const

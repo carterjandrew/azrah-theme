@@ -25,3 +25,9 @@ No log evidence showed Azrah loading into the slow session. KWin reported a temp
 ### Development rule
 
 Test a fresh build in a single application with an explicit `QT_PLUGIN_PATH` and `QT_STYLE_OVERRIDE=Azrah` before exposing it to the entire Plasma session. Do not restart or replace KWin automatically from development tooling.
+
+## 2026-09-21 — First Azrah decoration identity
+
+The initial visual change keeps Breeze's decoration implementation instead of replacing it with a border-only plugin. This preserves captions, buttons, shadows, resizing, shading, border-size support, and per-window exceptions while allowing Azrah to default to a titlebar-free workflow.
+
+Corner radius is treated as a single geometry decision across painting, compositor metadata, outlines, and shadow masks. Active focus is communicated through the window palette's highlight color, so the frame follows KDE color schemes without a separate Azrah color setting.

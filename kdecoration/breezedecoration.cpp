@@ -229,6 +229,10 @@ bool Decoration::init()
     connect(s.get(), &KDecoration3::DecorationSettings::reconfigured, this, &Decoration::updateButtonsGeometryDelayed);
 
     connect(window(), &KDecoration3::DecoratedWindow::activeChanged, this, &Decoration::recalculateBorders);
+    connect(window(), &KDecoration3::DecoratedWindow::paletteChanged, this, [this]() {
+        recalculateBorders();
+        update();
+    });
     connect(window(), &KDecoration3::DecoratedWindow::adjacentScreenEdgesChanged, this, &Decoration::recalculateBorders);
     connect(window(), &KDecoration3::DecoratedWindow::maximizedHorizontallyChanged, this, &Decoration::recalculateBorders);
     connect(window(), &KDecoration3::DecoratedWindow::maximizedVerticallyChanged, this, &Decoration::recalculateBorders);
@@ -475,9 +479,11 @@ void Decoration::recalculateBorders()
     if (isMaximized() || !outlinesEnabled()) {
         setBorderOutline(KDecoration3::BorderOutline());
     } else {
-        const auto color = KColorUtils::mix(window()->color(window()->isActive() ? ColorGroup::Active : ColorGroup::Inactive, ColorRole::Frame),
-                                            window()->palette().text().color(),
-                                            KColorScheme::frameContrast());
+        const QColor color = window()->isActive()
+            ? window()->palette().color(QPalette::Active, QPalette::Highlight)
+            : KColorUtils::mix(window()->color(ColorGroup::Inactive, ColorRole::Frame),
+                               window()->palette().color(QPalette::Inactive, QPalette::WindowText),
+                               KColorScheme::frameContrast());
         const qreal thickness = std::max(KDecoration3::pixelSize(window()->nextScale()), KDecoration3::snapToPixelGrid(1, window()->nextScale()));
 
         qreal topLeftRightRadius = 0;
@@ -824,7 +830,8 @@ std::shared_ptr<KDecoration3::DecorationShadow> Decoration::createShadowObject(c
         BoxShadowRenderer::calculateMinimumBoxSize(params.shadow1.radius).expandedTo(BoxShadowRenderer::calculateMinimumBoxSize(params.shadow2.radius));
 
     BoxShadowRenderer shadowRenderer;
-    shadowRenderer.setBorderRadius(m_scaledCornerRadius + 0.5);
+    const qreal shadowCornerRadius = m_scaledCornerRadius > 0 ? m_scaledCornerRadius + 0.5 : 0;
+    shadowRenderer.setBorderRadius(shadowCornerRadius);
     shadowRenderer.setBoxSize(boxSize);
 
     const qreal strength = m_internalSettings->shadowStrength() / 255.0 * strengthScale;
@@ -854,7 +861,7 @@ std::shared_ptr<KDecoration3::DecorationShadow> Decoration::createShadowObject(c
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::black);
     painter.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-    painter.drawRoundedRect(innerRect, m_scaledCornerRadius + 0.5, m_scaledCornerRadius + 0.5);
+    painter.drawRoundedRect(innerRect, shadowCornerRadius, shadowCornerRadius);
 
     painter.end();
 
@@ -870,7 +877,9 @@ void Decoration::setScaledCornerRadius()
     // On X11, the smallSpacing value is used for scaling.
     // On Wayland, this value has constant factor of 2.
     // Removing it will break radius scaling on X11.
-    m_scaledCornerRadius = KDecoration3::snapToPixelGrid(Metrics::Frame_FrameRadius * settings()->smallSpacing(), window()->nextScale());
+    m_scaledCornerRadius = m_internalSettings->roundedCorners()
+        ? KDecoration3::snapToPixelGrid(Metrics::Frame_FrameRadius * settings()->smallSpacing(), window()->nextScale())
+        : 0;
 }
 
 void Decoration::updateScale()
