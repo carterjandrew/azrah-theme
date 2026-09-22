@@ -52,3 +52,9 @@ The manual outline-width setting initially changed only `KDecoration3::BorderOut
 ### Resolution
 
 Azrah now keeps the compositor outline empty and paints the focus border into real decoration margins. Automatic width reuses the effective KDE side-border size. A manual override reserves at least its DPI-scaled width in the decoration geometry, so its full painted area is included in tiling calculations. Square mode uses non-antialiased rectangular fills and a rectangular shadow cutout; only the explicit Rounded Corners option enables curved paths.
+
+## 2026-09-22 — First application-style geometry pass
+
+The Qt style contains both shared frame rendering and several control-specific pill shapes. Setting the main frame radius to zero is not sufficient by itself: checkboxes, slider grooves, progress bars, scrollbars, tabs, menu masks, and button shadows each have dedicated painting paths.
+
+Azrah centralizes square geometry through zero-radius metrics and rectangular helper paths, then explicitly handles those control-specific painters. Circular radio indicators and slider handles remain unchanged for recognition. Application popup shadows are disabled in the style's shadow helper rather than changing the shared `azrahrc` shadow keys, because those keys are also used by the independently configurable KWin decoration.

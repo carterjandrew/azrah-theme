@@ -52,3 +52,10 @@ Each stable decision should state the date, affected components, decision, color
 - The outline is painted inside the decoration margins, so its full width is included in the window geometry used by tiling layouts and does not consume surrounding gaps.
 - A manual width override reserves at least the same DPI-scaled decoration margin. It does not change the configured KDE or per-window border-size value.
 - Square mode uses rectangular, non-antialiased frame and shadow masks. Rounded painting remains available only through the explicit Rounded Corners option.
+
+### 2026-09-22 — Square application controls
+
+- Core application controls use zero-radius, pixel-aligned frames while preserving Breeze's layout density.
+- Normal controls use system surfaces and neutral outlines; hover uses a subtle system-highlight tint, focus uses a highlight outline, and pressed, checked, or selected states use the system highlight fill.
+- Radio buttons, slider and dial handles, and busy indicators remain circular where shape communicates behavior. Their surrounding tracks and frames are square.
+- Application control and popup shadows are disabled. KWin decoration shadows remain independently configurable.

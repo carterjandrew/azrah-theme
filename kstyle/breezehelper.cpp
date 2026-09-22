@@ -369,7 +369,7 @@ void Helper::renderDebugFrame(QPainter *painter, const QRectF &rect) const
 void Helper::renderFocusRect(QPainter *painter, const QRectF &rect, const QBrush &brush, const QColor &outline, Sides sides) const
 {
     painter->save();
-    painter->setRenderHints(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
     painter->setBrush(brush);
 
     if (!(outline.isValid() && sides)) {
@@ -397,7 +397,7 @@ void Helper::renderFocusRect(QPainter *painter, const QRectF &rect, const QBrush
 
         painter->setPen(outline);
         // painter->setBrush( Qt::NoBrush );
-        painter->drawRoundedRect(copy, radius, radius);
+        painter->drawRect(copy);
     }
 
     painter->restore();
@@ -474,16 +474,13 @@ void Helper::renderFrameWithSides(QPainter *painter, const QRectF &rect, const Q
 //______________________________________________________________________________
 void Helper::renderFrame(QPainter *painter, const QRectF &rect, const QColor &color, const QColor &outline) const
 {
-    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     QRectF frameRect(rect);
-    qreal radius(frameRadius(PenWidth::NoPen));
-
     // set pen
     if (outline.isValid()) {
         painter->setPen(outline);
         frameRect = strokedRect(frameRect);
-        radius = frameRadiusForNewPenWidth(radius, PenWidth::Frame);
 
     } else {
         painter->setPen(Qt::NoPen);
@@ -497,7 +494,7 @@ void Helper::renderFrame(QPainter *painter, const QRectF &rect, const QColor &co
     }
 
     // render
-    painter->drawRoundedRect(frameRect, radius, radius);
+    painter->drawRect(frameRect);
 }
 
 //______________________________________________________________________________
@@ -535,8 +532,7 @@ void Helper::renderSidePanelFrame(QPainter *painter, const QRectF &rect, const Q
         break;
 
     case AllSides: {
-        const qreal radius(frameRadius(PenWidth::Frame));
-        painter->drawRoundedRect(frameRect, radius, radius);
+        painter->drawRect(frameRect);
         break;
     }
     }
@@ -561,8 +557,8 @@ void Helper::renderMenuFrame(QPainter *painter, const QRectF &rect, const QColor
         painter->setClipRect(rect);
     }
 
-    if (roundCorners) {
-        painter->setRenderHint(QPainter::Antialiasing);
+    if (roundCorners && Metrics::Frame_FrameRadius > 0) {
+        painter->setRenderHint(QPainter::Antialiasing, true);
         QRectF frameRect(rect);
 
         qreal radius(Metrics::Frame_FrameRadius);
@@ -618,7 +614,7 @@ QRegion Helper::menuFrameRegion(const QMenu *widget)
 
     const bool hasAlpha(hasAlphaChannel(widget));
     const auto seamlessEdges = menuSeamlessEdges(widget);
-    const auto roundCorners = hasAlpha;
+    const auto roundCorners = hasAlpha && Metrics::Frame_FrameRadius > 0;
 
     if (roundCorners) {
         QRectF frameRect(widget->rect());
@@ -667,8 +663,7 @@ void Helper::renderButtonFrame(QPainter *painter,
         return;
     }
 
-    QRectF shadowedRect = this->shadowedRect(rect);
-    QRectF frameRect = strokedRect(shadowedRect);
+    QRectF frameRect = strokedRect(rect);
     // setting color group to work around KColorScheme feature
     const QColor &highlightColor = palette.color(!enabled ? QPalette::Disabled : QPalette::Active, QPalette::Highlight);
     QBrush bgBrush;
@@ -676,30 +671,29 @@ void Helper::renderButtonFrame(QPainter *painter,
 
     // Colors
     if (flat) {
-        if (down && enabled) {
-            bgBrush = alphaColor(highlightColor, highlightBackgroundAlpha);
-        } else if (checked) {
-            bgBrush = hasNeutralHighlight ? alphaColor(neutralText(palette), highlightBackgroundAlpha) : alphaColor(palette.buttonText().color(), 0.125);
-            penBrush =
-                hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
+        if ((down || checked) && enabled) {
+            bgBrush = highlightColor;
+            penBrush = highlightColor;
         } else if (isActiveWindow && defaultButton) {
-            bgBrush = alphaColor(highlightColor, 0.125);
-            penBrush = KColorUtils::mix(highlightColor, KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias()), 0.5);
+            bgBrush = alphaColor(highlightColor, highlightBackgroundAlpha);
+            penBrush = highlightColor;
+        } else if (hovered && enabled) {
+            bgBrush = alphaColor(highlightColor, highlightBackgroundAlpha);
+            penBrush = highlightColor;
         } else {
             bgBrush = alphaColor(highlightColor, 0);
             penBrush = hasNeutralHighlight ? neutralText(palette) : bgBrush;
         }
     } else {
-        if (down && enabled) {
-            bgBrush = KColorUtils::mix(palette.button().color(), highlightColor, Metrics::Blend_Value);
-        } else if (checked) {
-            bgBrush = hasNeutralHighlight ? KColorUtils::mix(palette.button().color(), neutralText(palette), Metrics::Blend_Value)
-                                          : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.125);
-            penBrush =
-                hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
+        if ((down || checked) && enabled) {
+            bgBrush = highlightColor;
+            penBrush = highlightColor;
         } else if (isActiveWindow && defaultButton) {
-            bgBrush = KColorUtils::mix(palette.button().color(), highlightColor, 0.2);
-            penBrush = KColorUtils::mix(highlightColor, KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias()), 0.5);
+            bgBrush = palette.button().color();
+            penBrush = highlightColor;
+        } else if (hovered && enabled) {
+            bgBrush = KColorUtils::mix(palette.button().color(), highlightColor, highlightBackgroundAlpha);
+            penBrush = highlightColor;
         } else {
             bgBrush = palette.button().color();
             penBrush =
@@ -714,8 +708,7 @@ void Helper::renderButtonFrame(QPainter *painter,
     // Animations
     if (bgAnimation != AnimationData::OpacityInvalid && enabled) {
         QColor color1 = bgBrush.color();
-        QColor color2 =
-            flat ? alphaColor(highlightColor, highlightBackgroundAlpha) : KColorUtils::mix(palette.button().color(), highlightColor, Metrics::Blend_Value);
+        QColor color2 = highlightColor;
         bgBrush = KColorUtils::mix(color1, color2, bgAnimation);
     }
     if (penAnimation != AnimationData::OpacityInvalid && enabled) {
@@ -725,65 +718,36 @@ void Helper::renderButtonFrame(QPainter *painter,
     }
 
     const qreal roundRadius = std::max(rect.width(), rect.height()) / 2;
-    // Shadow
-    if (isActiveWindow && !(flat || down || checked) && enabled) {
-        const qreal shadowRadius = roundButton ? roundRadius : Metrics::Frame_FrameRadius - PenWidth::Shadow / 2;
-        renderRoundedRectShadow(painter, shadowedRect, shadowColor(palette), shadowRadius);
-    }
-
     // Render button
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, roundButton);
     painter->setBrush(bgBrush);
     painter->setPen(QPen(penBrush, PenWidth::Frame));
     const qreal radius = roundButton ? roundRadius : frameRadius(PenWidth::Frame);
-    painter->drawRoundedRect(frameRect, radius, radius);
+    if (roundButton) {
+        painter->drawRoundedRect(frameRect, radius, radius);
+    } else {
+        painter->drawRect(frameRect);
+    }
 }
 
 //______________________________________________________________________________
 void Helper::renderToolBoxFrame(QPainter *painter, const QRectF &rect, int tabWidth, const QColor &outline) const
 {
+    Q_UNUSED(tabWidth)
     if (!outline.isValid()) {
         return;
     }
 
-    // round radius
-    const qreal radius(frameRadius(PenWidth::Frame));
-    const QSizeF cornerSize(2 * radius, 2 * radius);
-
-    // if rect - tabwidth is even, need to increase tabWidth by 1 unit
-    // for anti aliasing
-    if (!((rect.toRect().width() - tabWidth) % 2)) {
-        ++tabWidth;
-    }
-
-    // adjust rect for antialiasing
-    QRectF baseRect(strokedRect(rect));
-
-    // create path
-    QPainterPath path;
-    path.moveTo(0, baseRect.height() - 1);
-    path.lineTo((baseRect.width() - tabWidth) / 2 - radius, baseRect.height() - 1);
-    path.arcTo(QRectF(QPointF((baseRect.width() - tabWidth) / 2 - 2 * radius, baseRect.height() - 1 - 2 * radius), cornerSize), 270, 90);
-    path.lineTo((baseRect.width() - tabWidth) / 2, radius);
-    path.arcTo(QRectF(QPointF((baseRect.width() - tabWidth) / 2, 0), cornerSize), 180, -90);
-    path.lineTo((baseRect.width() + tabWidth) / 2 - 1 - radius, 0);
-    path.arcTo(QRectF(QPointF((baseRect.width() + tabWidth) / 2 - 1 - 2 * radius, 0), cornerSize), 90, -90);
-    path.lineTo((baseRect.width() + tabWidth) / 2 - 1, baseRect.height() - 1 - radius);
-    path.arcTo(QRectF(QPointF((baseRect.width() + tabWidth) / 2 - 1, baseRect.height() - 1 - 2 * radius), cornerSize), 180, 90);
-    path.lineTo(baseRect.width() - 1, baseRect.height() - 1);
-
-    // render
-    painter->setRenderHints(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
     painter->setBrush(Qt::NoBrush);
     painter->setPen(outline);
-    painter->translate(baseRect.topLeft());
-    painter->drawPath(path);
+    painter->drawRect(strokedRect(rect));
 }
 
 //______________________________________________________________________________
 void Helper::renderTabWidgetFrame(QPainter *painter, const QRectF &rect, const QColor &color, const QColor &outline, Corners corners) const
 {
-    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     QRectF frameRect(rect.adjusted(1, 1, -1, -1));
     qreal radius(frameRadius(PenWidth::NoPen));
@@ -837,15 +801,12 @@ void Helper::renderCheckBoxBackground(QPainter *painter,
                                       qreal animation) const
 {
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     // copy rect
     QRectF frameRect(rect);
     frameRect.adjust(2, 2, -2, -2);
     frameRect = strokedRect(frameRect);
-
-    auto transparent = neutalHighlight ? neutralText(palette) : palette.highlight().color();
-    transparent.setAlphaF(highlightBackgroundAlpha);
 
     QBrush penBrush;
     if (neutalHighlight) {
@@ -857,20 +818,14 @@ void Helper::renderCheckBoxBackground(QPainter *painter,
     }
     painter->setPen(QPen(penBrush, PenWidth::Frame));
 
-    const auto radius = Metrics::CheckBox_Radius;
-
-    painter->setBrush(palette.button().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
-    painter->drawRoundedRect(frameRect, radius, radius);
-
-    if (state == CheckOff) {
-        return;
-    }
-
-    painter->setBrush(transparent);
+    const QColor baseColor = palette.button().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100);
+    QColor fillColor = state == CheckOff ? baseColor : (neutalHighlight ? neutralText(palette) : palette.highlight().color());
     if (state == CheckAnimated) {
-        painter->setOpacity(animation);
+        const QColor activeColor = neutalHighlight ? neutralText(palette) : palette.highlight().color();
+        fillColor = KColorUtils::mix(baseColor, activeColor, animation);
     }
-    painter->drawRoundedRect(frameRect, radius, radius);
+    painter->setBrush(fillColor);
+    painter->drawRect(frameRect);
 }
 
 //______________________________________________________________________________
@@ -888,7 +843,7 @@ void Helper::renderCheckBox(QPainter *painter,
     Q_UNUSED(sunken)
 
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     // copy rect and radius
     QRectF frameRect(rect);
@@ -904,10 +859,12 @@ void Helper::renderCheckBox(QPainter *painter,
         painter->setPen(QPen(neutalHighlight ? neutralText(palette).lighter() : focusColor(palette), PenWidth::Frame));
         painter->setBrush(Qt::NoBrush);
 
-        painter->drawRoundedRect(frameRect.adjusted(0.5, 0.5, -0.5, -0.5), Metrics::CheckBox_Radius, Metrics::CheckBox_Radius);
+        painter->drawRect(frameRect.adjusted(0.5, 0.5, -0.5, -0.5));
 
         painter->restore();
     }
+
+    painter->setRenderHint(QPainter::Antialiasing, true);
 
     // check
     auto leftPoint = frameRect.center();
@@ -935,7 +892,8 @@ void Helper::renderCheckBox(QPainter *painter,
     painter->setPen(Qt::transparent);
     painter->setBrush(Qt::transparent);
 
-    auto checkPen = QPen(palette.text(), PenWidth::Frame * 2);
+    const QColor indicatorColor = neutalHighlight ? palette.text().color() : palette.highlightedText().color();
+    auto checkPen = QPen(indicatorColor, PenWidth::Frame * 2);
     checkPen.setJoinStyle(Qt::MiterJoin);
 
     switch (state) {
@@ -946,7 +904,7 @@ void Helper::renderCheckBox(QPainter *painter,
         painter->drawPath(path);
         break;
     case CheckPartial:
-        painter->setBrush(palette.text());
+        painter->setBrush(indicatorColor);
         painter->drawRect(leftDot);
         painter->drawRect(centerDot);
         painter->drawRect(rightDot);
@@ -1081,18 +1039,17 @@ void Helper::renderRadioButton(QPainter *painter,
 void Helper::renderSliderGroove(QPainter *painter, const QRectF &rect, const QColor &fg, const QColor &bg) const
 {
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     QRectF baseRect(rect);
     baseRect.adjust(0.5, 0.5, -0.5, -0.5);
-    const qreal radius(0.5 * Metrics::Slider_GrooveThickness);
 
     // content
     // content
     if (fg.isValid()) {
         painter->setPen(QPen(transparentize(fg, frameIntensityBias()), PenWidth::Frame));
         painter->setBrush(KColorUtils::overlayColors(bg, alphaColor(fg, 0.7)));
-        painter->drawRoundedRect(baseRect, radius, radius);
+        painter->drawRect(baseRect);
     }
 }
 
@@ -1175,10 +1132,8 @@ void Helper::renderSliderHandle(QPainter *painter, const QRectF &rect, const QCo
     QRectF frameRect(rect);
     frameRect.adjust(1, 1, -1, -1);
 
-    // shadow
-    if (!sunken) {
-        renderEllipseShadow(painter, frameRect, shadow);
-    }
+    Q_UNUSED(shadow)
+    Q_UNUSED(sunken)
 
     // set pen
     if (outline.isValid()) {
@@ -1204,17 +1159,16 @@ void Helper::renderSliderHandle(QPainter *painter, const QRectF &rect, const QCo
 void Helper::renderProgressBarGroove(QPainter *painter, const QRectF &rect, const QColor &fg, const QColor &bg) const
 {
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     QRectF baseRect(rect);
     baseRect.adjust(0.5, 0.5, -0.5, -0.5);
-    const qreal radius(0.5 * Metrics::ProgressBar_Thickness);
 
     // content
     if (fg.isValid()) {
         painter->setPen(QPen(transparentize(fg, frameIntensityBias()), PenWidth::Frame));
         painter->setBrush(KColorUtils::overlayColors(bg, alphaColor(fg, 0.7)));
-        painter->drawRoundedRect(baseRect, radius, radius);
+        painter->drawRect(baseRect);
     }
 }
 
@@ -1228,10 +1182,9 @@ void Helper::renderProgressBarBusyContents(QPainter *painter,
                                            int progress) const
 {
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     const QRectF baseRect(rect);
-    const qreal radius(0.5 * Metrics::ProgressBar_Thickness);
 
     // setup brush
     QPixmap pixmap(horizontal ? 2 * Metrics::ProgressBar_BusyIndicatorSize : 1, horizontal ? 1 : 2 * Metrics::ProgressBar_BusyIndicatorSize);
@@ -1267,22 +1220,21 @@ void Helper::renderProgressBarBusyContents(QPainter *painter,
 
     painter->setPen(Qt::NoPen);
     painter->setBrush(pixmap);
-    painter->drawRoundedRect(baseRect, radius, radius);
+    painter->drawRect(baseRect);
 }
 
 //______________________________________________________________________________
 void Helper::renderScrollBarHandle(QPainter *painter, const QRectF &rect, const QColor &fg, const QColor &bg) const
 {
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     const QRectF baseRect(rect);
-    const qreal radius(0.5 * std::min({baseRect.width(), baseRect.height(), (qreal)Metrics::ScrollBar_SliderWidth}));
 
     painter->setPen(Qt::NoPen);
     painter->setPen(QPen(transparentize(fg, frameIntensityBias()), 1.001));
     painter->setBrush(KColorUtils::overlayColors(bg, alphaColor(fg, 0.5)));
-    painter->drawRoundedRect(strokedRect(baseRect), radius, radius);
+    painter->drawRect(strokedRect(baseRect));
 }
 
 //______________________________________________________________________________
@@ -1303,6 +1255,7 @@ void Helper::renderStaticTabBarTab(QPainter *painter,
                                    Corners corners,
                                    qreal animation) const
 {
+    Q_UNUSED(corners)
     bool enabled = stateProperties.value("enabled", true);
     bool hovered = stateProperties.value("hovered");
     bool selected = stateProperties.value("selected");
@@ -1321,7 +1274,7 @@ void Helper::renderStaticTabBarTab(QPainter *painter,
     const auto windowColor = palette.color(QPalette::Window);
 
     // setup painter
-    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::Antialiasing, false);
     QRectF frameRect = rect;
     QColor bgBrush;
 
@@ -1803,7 +1756,7 @@ QPainterPath Helper::roundedPath(const QRectF &rect, Corners corners, qreal radi
     QPainterPath path;
 
     // simple cases
-    if (corners == 0) {
+    if (corners == 0 || radius <= 0) {
         path.addRect(rect);
         return path;
     }
