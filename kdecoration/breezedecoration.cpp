@@ -375,6 +375,19 @@ qreal Decoration::borderSize(bool bottom, qreal scale) const
 }
 
 //________________________________________________________________
+qreal Decoration::outlineThickness(qreal scale) const
+{
+    if (m_internalSettings->customOutlineWidthEnabled()) {
+        return std::max(KDecoration3::pixelSize(scale),
+                        KDecoration3::snapToPixelGrid(m_internalSettings->customOutlineWidth(), scale));
+    }
+
+    // Use the side border so that No Sides, None, and per-window border-size
+    // overrides have the same meaning for both the frame and its outline.
+    return borderSize(false, scale);
+}
+
+//________________________________________________________________
 void Decoration::reconfigure()
 {
     m_internalSettings = SettingsProvider::self()->internalSettings(this);
@@ -476,7 +489,8 @@ void Decoration::recalculateBorders()
     }
     setBorderRadius(KDecoration3::BorderRadius(topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius));
 
-    if (isMaximized() || !outlinesEnabled()) {
+    const qreal thickness = outlineThickness(window()->nextScale());
+    if (isMaximized() || !outlinesEnabled() || thickness <= 0) {
         setBorderOutline(KDecoration3::BorderOutline());
     } else {
         const QColor color = window()->isActive()
@@ -484,8 +498,6 @@ void Decoration::recalculateBorders()
             : KColorUtils::mix(window()->color(ColorGroup::Inactive, ColorRole::Frame),
                                window()->palette().color(QPalette::Inactive, QPalette::WindowText),
                                KColorScheme::frameContrast());
-        const qreal thickness = std::max(KDecoration3::pixelSize(window()->nextScale()), KDecoration3::snapToPixelGrid(1, window()->nextScale()));
-
         qreal topLeftRightRadius = 0;
         qreal bottomLeftRadius = 0;
         qreal bottomRightRadius = 0;

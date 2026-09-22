@@ -10,7 +10,7 @@
     "X-KDE-ConfigModule": "kcm_azrahdecoration",
     "org.kde.kdecoration3": {
         "blur": false,
-        "recommendedBorderSize": "None",
+        "recommendedBorderSize": "Normal",
         "styles": [
             "shadow",
             "titled"

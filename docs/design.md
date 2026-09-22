@@ -39,3 +39,10 @@ Each stable decision should state the date, affected components, decision, color
 - Titlebars are hidden by default for a tiling-window-manager character, but remain globally configurable and overridable through Breeze-compatible per-window exceptions.
 - Active windows use a one-pixel KDE system-highlight outline. Inactive windows retain a one-pixel neutral system-derived outline.
 - Maximized windows omit the outline at screen edges. Shadows, invisible resize margins, and user-selected border sizes remain supported.
+
+### 2026-09-21 — Border-size-aware outlines
+
+- By default, the visible outline follows KDE's effective Window Border Size, including per-window overrides. `None` and `No Sides` therefore omit the outline.
+- Azrah recommends KDE's `Normal` border size so a visible, deliberate frame is the default while the user's global choice remains authoritative.
+- An optional 1–32 logical-pixel override controls only the painted outline. It is DPI-scaled and does not alter window geometry, resize margins, or per-window border settings.
+- Disabled outlines and maximized windows remain outline-free regardless of the width override.

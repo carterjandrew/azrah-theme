@@ -43,6 +43,9 @@ ConfigWidget::ConfigWidget(QObject *parent, const KPluginMetaData &data, const Q
     connect(m_ui.shadowStrength, SIGNAL(valueChanged(int)), SLOT(updateChanged()));
     connect(m_ui.shadowColor, &KColorButton::changed, this, &ConfigWidget::updateChanged);
     connect(m_ui.drawOutline, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
+    connect(m_ui.customOutlineWidthEnabled, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
+    connect(m_ui.customOutlineWidthEnabled, &QAbstractButton::toggled, m_ui.customOutlineWidth, &QWidget::setEnabled);
+    connect(m_ui.customOutlineWidth, qOverload<int>(&QSpinBox::valueChanged), this, &ConfigWidget::updateChanged);
 
     // track exception changes
     connect(m_ui.exceptions, &ExceptionListWidget::changed, this, &ConfigWidget::updateChanged);
@@ -50,6 +53,7 @@ ConfigWidget::ConfigWidget(QObject *parent, const KPluginMetaData &data, const Q
     // set formatting
     m_ui.drawBorderOnMaximizedWindowsHelpLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
     m_ui.hideTitleBarHelpLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
+    m_ui.customOutlineWidthHelpLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
 }
 
 //_________________________________________________________
@@ -76,6 +80,9 @@ void ConfigWidget::load()
     }
 
     m_ui.drawOutline->setChecked(m_internalSettings->outlineEnabled());
+    m_ui.customOutlineWidthEnabled->setChecked(m_internalSettings->customOutlineWidthEnabled());
+    m_ui.customOutlineWidth->setValue(m_internalSettings->customOutlineWidth());
+    m_ui.customOutlineWidth->setEnabled(m_ui.customOutlineWidthEnabled->isChecked());
 
     m_ui.shadowStrength->setValue(qRound(qreal(m_internalSettings->shadowStrength() * 100) / 255));
     m_ui.shadowColor->setColor(m_internalSettings->shadowColor());
@@ -108,6 +115,8 @@ void ConfigWidget::save()
     m_internalSettings->setShadowColor(m_ui.shadowColor->color());
 
     m_internalSettings->setOutlineEnabled(m_ui.drawOutline->isChecked());
+    m_internalSettings->setCustomOutlineWidthEnabled(m_ui.customOutlineWidthEnabled->isChecked());
+    m_internalSettings->setCustomOutlineWidth(m_ui.customOutlineWidth->value());
 
     // save configuration
     m_internalSettings->save();
@@ -153,6 +162,9 @@ void ConfigWidget::defaults()
     m_ui.shadowStrength->setValue(qRound(qreal(m_internalSettings->shadowStrength() * 100) / 255));
     m_ui.shadowColor->setColor(m_internalSettings->shadowColor());
     m_ui.drawOutline->setChecked(m_internalSettings->outlineEnabled());
+    m_ui.customOutlineWidthEnabled->setChecked(m_internalSettings->customOutlineWidthEnabled());
+    m_ui.customOutlineWidth->setValue(m_internalSettings->customOutlineWidth());
+    m_ui.customOutlineWidth->setEnabled(m_ui.customOutlineWidthEnabled->isChecked());
 }
 
 //_______________________________________________
@@ -189,6 +201,10 @@ void ConfigWidget::updateChanged()
     } else if (m_ui.shadowColor->color() != m_internalSettings->shadowColor()) {
         modified = true;
     } else if (m_ui.drawOutline->isChecked() != m_internalSettings->outlineEnabled()) {
+        modified = true;
+    } else if (m_ui.customOutlineWidthEnabled->isChecked() != m_internalSettings->customOutlineWidthEnabled()) {
+        modified = true;
+    } else if (m_ui.customOutlineWidth->value() != m_internalSettings->customOutlineWidth()) {
         modified = true;
         // exceptions
     } else if (m_ui.exceptions->isChanged()) {

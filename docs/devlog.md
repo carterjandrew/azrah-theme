@@ -31,3 +31,9 @@ Test a fresh build in a single application with an explicit `QT_PLUGIN_PATH` and
 The initial visual change keeps Breeze's decoration implementation instead of replacing it with a border-only plugin. This preserves captions, buttons, shadows, resizing, shading, border-size support, and per-window exceptions while allowing Azrah to default to a titlebar-free workflow.
 
 Corner radius is treated as a single geometry decision across painting, compositor metadata, outlines, and shadow masks. Active focus is communicated through the window palette's highlight color, so the frame follows KDE color schemes without a separate Azrah color setting.
+
+## 2026-09-21 — Outline width and resize-border semantics
+
+The decoration outline now derives its automatic thickness from the effective side-border calculation rather than a fixed one-pixel value. Reusing `borderSize(false, scale)` is important: it preserves KWin's global border size, Azrah's per-window exception mask, fractional scaling, and the zero-width meaning of both `None` and `No Sides`.
+
+The manual outline-width setting is intentionally separate from decoration borders. It changes only `KDecoration3::BorderOutline`; layout margins and invisible resize-only borders continue to follow KWin. Values are stored as logical pixels and snapped to the output scale when painted.

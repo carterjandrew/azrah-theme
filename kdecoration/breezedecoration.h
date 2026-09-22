@@ -109,6 +109,7 @@ private:
     //*@name border size
     //@{
     qreal borderSize(bool bottom, qreal scale) const;
+    qreal outlineThickness(qreal scale) const;
     inline bool hasBorders() const;
     inline bool hasNoBorders() const;
     inline bool hasNoSideBorders() const;
