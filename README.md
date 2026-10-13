@@ -36,6 +36,11 @@ Add Azrah to your NixOS flake inputs, import its module, and enable it. Replace
 }
 ```
 
+Keep `inputs.azrah.inputs.nixpkgs.follows = "nixpkgs"` in place. Azrah is
+derived from `pkgs.kdePackages.breeze`, so following the system's nixpkgs input
+keeps its Qt, KDE Frameworks, and Plasma libraries aligned with the rest of the
+system instead of introducing a second KDE package set.
+
 Then rebuild your system from the directory containing your `flake.nix`:
 
 ```sh
@@ -103,7 +108,7 @@ Azrah stores its settings in `azrahrc`, independently of Breeze's settings.
 
 Azrah uses the standard KDE CMake build. Both Qt versions are enabled by
 default; use `BUILD_QT5` and `BUILD_QT6` to control them. The current source
-requires Qt 6.11, KDE Frameworks 6.30, and compatible Plasma development
+requires Qt 6.11, KDE Frameworks 6.26, and compatible Plasma development
 libraries.
 
 ## Upstream and licensing
