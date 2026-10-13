@@ -1,4 +1,4 @@
-add_definitions(-DTRANSLATION_DOMAIN="breeze_kwin_deco")
+add_definitions(-DTRANSLATION_DOMAIN="azrah_kwin_deco")
 
 ################# includes #################
 include_directories(${CMAKE_SOURCE_DIR}/libbreezecommon)
@@ -15,15 +15,15 @@ set(breezedecoration_SRCS
 
 ### build library
 kconfig_add_kcfg_files(breezedecoration_SRCS breezesettings.kcfgc)
-add_library(breezedecoration MODULE
+add_library(azrahdecoration MODULE
     ${breezedecoration_SRCS}
     ${breezedecoration_config_PART_FORMS_HEADERS})
 
-set_target_properties(breezedecoration PROPERTIES
-    OUTPUT_NAME org.kde.breeze
+set_target_properties(azrahdecoration PROPERTIES
+    OUTPUT_NAME org.kde.azrah
 )
 
-target_link_libraries(breezedecoration
+target_link_libraries(azrahdecoration
     PRIVATE
         breezecommon6
         Qt6::DBus
@@ -36,8 +36,11 @@ target_link_libraries(breezedecoration
         KF6::ColorScheme
 )
 
-install(TARGETS breezedecoration DESTINATION ${KDE_INSTALL_PLUGINDIR}/${KDECORATION_PLUGIN_DIR})
-install(FILES breezesettingsdata.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME breeze-decoration.kcfg)
+if(KDecoration3_VERSION VERSION_GREATER_EQUAL "6.8.0")
+    target_compile_definitions(azrahdecoration PRIVATE AZRAH_HAVE_KDECORATION_STYLE)
+endif()
+
+install(TARGETS azrahdecoration DESTINATION ${KDE_INSTALL_PLUGINDIR}/${KDECORATION_PLUGIN_DIR})
+install(FILES breezesettingsdata.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME azrah-decoration.kcfg)
 
 add_subdirectory(config)
-

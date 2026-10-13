@@ -200,7 +200,11 @@ bool Decoration::isBottomEdge() const
 
 bool Decoration::hideTitleBar() const
 {
+#ifdef AZRAH_HAVE_KDECORATION_STYLE
     return style() == KDecoration3::Style::Shadow || (m_internalSettings->hideTitleBar() && !window()->isShaded());
+#else
+    return m_internalSettings->hideTitleBar() && !window()->isShaded();
+#endif
 }
 
 bool Decoration::outlinesEnabled() const

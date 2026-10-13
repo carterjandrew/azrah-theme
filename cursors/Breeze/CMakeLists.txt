@@ -1,1 +1,1 @@
-install(DIRECTORY Breeze/ DESTINATION ${KDE_INSTALL_ICONDIR}/breeze_cursors)
+install(DIRECTORY Breeze/ DESTINATION ${KDE_INSTALL_ICONDIR}/Azrah_Dark)

@@ -21,7 +21,7 @@ namespace Breeze
 //_________________________________________________________
 ConfigWidget::ConfigWidget(QObject *parent, const KPluginMetaData &data, const QVariantList & /*args*/)
     : KCModule(parent, data)
-    , m_configuration(KSharedConfig::openConfig(QStringLiteral("breezerc")))
+    , m_configuration(KSharedConfig::openConfig(QStringLiteral("azrahrc")))
     , m_changed(false)
 {
     // configuration
@@ -124,7 +124,7 @@ void ConfigWidget::save()
 
     // needed for breeze style to reload shadows
     {
-        QDBusMessage message(QDBusMessage::createSignal("/BreezeDecoration", "org.kde.Breeze.Style", "reparseConfiguration"));
+        QDBusMessage message(QDBusMessage::createSignal("/AzrahDecoration", "org.kde.Azrah.Style", "reparseConfiguration"));
         QDBusConnection::sessionBus().send(message);
     }
 }

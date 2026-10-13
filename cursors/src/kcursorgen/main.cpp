@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         "Convert SVG theme to XCursor theme.\n"
         "NOTE: This tool is in EXPERIMENTAL stage and subject to change.\n"
         "Usage:\n"
-        "    kcursorgen --svg-theme-to-xcursor --svg-dir <path> --xcursor-dir <path> --sizes <size1,size2,...> --scales <scale1,scale2,...>\n");
+        "    azrah-kcursorgen --svg-theme-to-xcursor --svg-dir <path> --xcursor-dir <path> --sizes <size1,size2,...> --scales <scale1,scale2,...>\n");
     const auto version = QStringLiteral("1.0");
 
     app.setApplicationVersion(version);

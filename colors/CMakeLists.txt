@@ -1,6 +1,9 @@
 install(FILES BreezeClassic.colors
-        DESTINATION ${KDE_INSTALL_DATADIR}/color-schemes/)
+        DESTINATION ${KDE_INSTALL_DATADIR}/color-schemes/
+        RENAME AzrahClassic.colors)
 install(FILES BreezeDark.colors
-        DESTINATION ${KDE_INSTALL_DATADIR}/color-schemes/)
+        DESTINATION ${KDE_INSTALL_DATADIR}/color-schemes/
+        RENAME AzrahDark.colors)
 install(FILES BreezeLight.colors
-        DESTINATION ${KDE_INSTALL_DATADIR}/color-schemes/)
+        DESTINATION ${KDE_INSTALL_DATADIR}/color-schemes/
+        RENAME AzrahLight.colors)

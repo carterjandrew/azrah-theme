@@ -8,10 +8,10 @@ int main(int, char**)
 {
     KConfig globals("kdeglobals");
     KConfigGroup general(&globals, QStringLiteral("General"));
-    if (general.readEntry("ColorScheme") != QLatin1String("Breeze")) {
+    if (general.readEntry("ColorScheme") != QLatin1String("Azrah")) {
         return 0;
     }
-    QString breezeLightPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("color-schemes/BreezeLight.colors"));
+    QString breezeLightPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("color-schemes/AzrahLight.colors"));
     if (breezeLightPath.isEmpty()) {
         return 0;
     }

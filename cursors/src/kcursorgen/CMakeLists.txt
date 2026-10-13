@@ -3,6 +3,7 @@ include(ECMMarkNonGuiExecutable)
 set(CMAKE_AUTOMOC ON)
 
 add_executable(kcursorgen)
+set_target_properties(kcursorgen PROPERTIES OUTPUT_NAME azrah-kcursorgen)
 
 ecm_mark_nongui_executable(kcursorgen)
 
