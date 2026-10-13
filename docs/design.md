@@ -19,7 +19,7 @@
 4. Apply the geometry and active/inactive language to the KWin decoration.
 5. Audit shadows, animations, high-DPI rendering, and non-default color schemes.
 
-Color schemes, cursors, wallpapers, Plasma shell themes, icons, GTK styling, and mobile-specific QQC2 themes are outside this milestone.
+Color schemes, cursors, wallpapers, icons, GTK styling, and mobile-specific QQC2 themes are outside this milestone. A partial Plasma theme is included only for applet popups and their shared controls; panel and task-manager styling remain future work.
 
 ## Decision log
 
@@ -59,3 +59,11 @@ Each stable decision should state the date, affected components, decision, color
 - Normal controls use system surfaces and neutral outlines; hover uses a subtle system-highlight tint, focus uses a highlight outline, and pressed, checked, or selected states use the system highlight fill.
 - Radio buttons, slider and dial handles, and busy indicators remain circular where shape communicates behavior. Their surrounding tracks and frames are square.
 - Application control and popup shadows are disabled. KWin decoration shadows remain independently configurable.
+
+### 2026-09-22 — Plasma applet popup surfaces
+
+- The Azrah Plasma theme is a partial theme: it overrides applet popup surfaces and common Plasma controls, while missing shell assets fall back to Breeze.
+- Popup frames are square and use the KDE system highlight color. Their default 12-logical-pixel frame matches Azrah's `Large` KWin border at standard KDE spacing; a 1–32 pixel build option allows deliberate alternatives.
+- Popup border width is a build-time Plasma-theme metric and does not track later KWin border-setting changes. Plasma and KWin do not expose a shared live metric for this purpose.
+- Normal, solid, and translucent popup assets remain distinct. Azrah does not force opacity or disable the user's Plasma transparency choices.
+- Controls inside popups use one-pixel frames so the strong outer frame does not make the contents visually heavy. Radio buttons and slider handles remain circular.

@@ -26,6 +26,14 @@ doctor() {
         fi
     done
 
+    for command_name in plasma-apply-desktoptheme plasmoidviewer; do
+        if command -v "$command_name" >/dev/null 2>&1; then
+            printf 'ok      %s (Plasma theme preview)\n' "$command_name"
+        else
+            printf 'optional %s (needed only for Plasma theme preview)\n' "$command_name"
+        fi
+    done
+
     mkdir -p -- "$repo_root/build/doctor"
     if (cd -- "$repo_root/build/doctor" && cmake --find-package -DNAME=ECM -DCOMPILER_ID=GNU -DLANGUAGE=CXX -DMODE=EXIST >/dev/null 2>&1); then
         printf 'ok      ECM (Extra CMake Modules)\n'
@@ -95,6 +103,7 @@ install_build() {
 
     command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6
     printf '\nAzrah installed in %s. Qt plugin directory: %s\n' "$install_prefix" "$plugin_dir"
+    printf 'Select the Azrah Plasma Style in System Settings or run: plasma-apply-desktoptheme azrah\n'
     printf 'Log out and back in after the first install so Plasma inherits QT_PLUGIN_PATH.\n'
 }
 

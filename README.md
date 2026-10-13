@@ -1,6 +1,6 @@
 # Azrah
 
-Azrah is a sharp, restrained KDE application style and KWin decoration derived from KDE's Breeze. It keeps Breeze's integration with KDE system colors while moving toward square geometry, clear borders, and simple two-tone interaction states.
+Azrah is a sharp, restrained KDE application style, KWin decoration, and companion Plasma theme derived from KDE's Breeze. It keeps Breeze's integration with KDE system colors while moving toward square geometry, clear borders, and simple two-tone interaction states.
 
 The project is early in development. The current milestone establishes a collision-free identity and a repeatable development workflow; the visual work comes next.
 
@@ -16,7 +16,7 @@ The project is early in development. The current milestone establishes a collisi
 
 The development preset builds the Qt 6 widget style and KWin decoration. It intentionally excludes the inherited Breeze colors, cursors, wallpapers, Qt 5 style, and miscellaneous utilities.
 
-The install command uses `~/.local`, refreshes KDE's service cache, and configures the user Qt plugin path. Log out and back in after the first install, then select **Azrah** under **System Settings → Colors & Themes → Application Style** and **Window Decorations**.
+The install command uses `~/.local`, refreshes KDE's service cache, and configures the user Qt plugin path. Log out and back in after the first install, then select **Azrah** under **System Settings → Colors & Themes → Application Style**, **Window Decorations**, and **Plasma Style**.
 
 To remove only the files recorded by the development install:
 

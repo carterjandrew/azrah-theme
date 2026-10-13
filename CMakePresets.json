@@ -22,6 +22,8 @@
         "BUILD_COLORS": false,
         "BUILD_CURSOR": false,
         "BUILD_MISC": false,
+        "BUILD_PLASMA_THEME": true,
+        "AZRAH_PLASMA_POPUP_BORDER_WIDTH": "12",
         "BUILD_WITH_QTQUICK": true,
         "WITH_DECORATIONS": true,
         "WITH_WALLPAPERS": false

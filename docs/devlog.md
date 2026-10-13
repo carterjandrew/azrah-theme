@@ -58,3 +58,13 @@ Azrah now keeps the compositor outline empty and paints the focus border into re
 The Qt style contains both shared frame rendering and several control-specific pill shapes. Setting the main frame radius to zero is not sufficient by itself: checkboxes, slider grooves, progress bars, scrollbars, tabs, menu masks, and button shadows each have dedicated painting paths.
 
 Azrah centralizes square geometry through zero-radius metrics and rectangular helper paths, then explicitly handles those control-specific painters. Circular radio indicators and slider handles remain unchanged for recognition. Application popup shadows are disabled in the style's shadow helper rather than changing the shared `azrahrc` shadow keys, because those keys are also used by the independently configurable KWin decoration.
+
+## 2026-09-22 — Plasma popups are not painted by the Qt style
+
+System-tray and applet popups use Plasma's QML and SVG theme stack. In particular, `AppletPopup` reaches the desktop theme's `widgets/background` FrameSVG; changing the Azrah Qt widget style cannot affect that surface.
+
+Azrah therefore installs a separate, partial Plasma desktop theme. It provides square popup variants and the common controls used inside them, while Plasma falls back to Breeze for missing assets. The theme keeps normal, solid, and translucent backgrounds distinct so user-selected transparency behavior remains authoritative.
+
+FrameSVG border width is encoded in generated SVG geometry. Plasma themes cannot query the effective KWin decoration border at runtime, so Azrah exposes a validated CMake option instead. The default is 12 logical pixels, corresponding to Azrah's `Large` KWin border at standard KDE spacing; controls inside the popup stay at one pixel.
+
+Development installation must never activate the theme or restart Plasma automatically. Install, confirm discovery, select Azrah explicitly, and keep Breeze available as the recovery theme.

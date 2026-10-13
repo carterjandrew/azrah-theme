@@ -2,7 +2,7 @@
 
 ## Supported development target
 
-The primary target is Plasma 6 on Linux with Qt 6. The default preset builds the Azrah Qt widget style, settings tools, KWin decoration, and existing tests.
+The primary target is Plasma 6 on Linux with Qt 6. The default preset builds the Azrah Qt widget style, settings tools, KWin decoration, partial Plasma theme, and existing tests.
 
 Qt 5, color schemes, cursor themes, wallpapers, translations, and Breeze compatibility utilities are off by default. They remain source material, but must not be installed under upstream Breeze names.
 
@@ -46,11 +46,19 @@ Check light and dark system schemes. For widgets, cover normal, hovered, focused
 
 Development scripts do not restart or replace KWin. After installing a decoration change, reselect Azrah or log out and back in. Keep Breeze available as the recovery style.
 
+The companion Plasma theme is not selected automatically. After installing it, select **Azrah** under **System Settings → Colors & Themes → Plasma Style**, or apply it explicitly:
+
+```sh
+plasma-apply-desktoptheme azrah
+```
+
+Use `plasmoidviewer` or `plasmawindowed` for focused applet testing. Check system-tray popups with normal, solid, and translucent Plasma behavior; Azrah preserves those modes rather than forcing opacity. Switching back to Breeze is the recovery path and does not require uninstalling Azrah.
+
 ## Troubleshooting
 
 - If configuration reports ECM missing, install `extra-cmake-modules` (it is missing on the original development machine at the time of writing).
 - If Azrah is absent from Application Style, compare `QT_PLUGIN_PATH` with the “Qt plugin directory” printed by `./scripts/dev install`, then start a new login session.
-- If metadata looks stale, run `kbuildsycoca6`.
+- If metadata looks stale, run `kbuildsycoca6`. Use `plasma-apply-desktoptheme --list-themes` to confirm that Plasma discovers the `azrah` theme.
 - If an application does not refresh after saving, restart it while investigating the Azrah D-Bus reload signal.
 - If the desktop becomes difficult to use, choose Breeze again. `./scripts/dev uninstall` does not touch Breeze.
 
@@ -65,4 +73,11 @@ This checkout may be shallow; use `git fetch --unshallow origin` if history is r
 
 ## Build options
 
-Direct CMake users may control `BUILD_QT5`, `BUILD_QT6`, `BUILD_STYLE`, `BUILD_COLORS`, `BUILD_CURSOR`, `BUILD_MISC`, `BUILD_WITH_QTQUICK`, `WITH_DECORATIONS`, and `WITH_WALLPAPERS`.
+Direct CMake users may control `BUILD_QT5`, `BUILD_QT6`, `BUILD_STYLE`, `BUILD_COLORS`, `BUILD_CURSOR`, `BUILD_MISC`, `BUILD_WITH_QTQUICK`, `WITH_DECORATIONS`, `WITH_WALLPAPERS`, and `BUILD_PLASMA_THEME`.
+
+`AZRAH_PLASMA_POPUP_BORDER_WIDTH` sets the outer applet-popup frame from 1–32 logical pixels and defaults to `12`. It affects only generated Plasma popup assets; inner controls retain one-pixel outlines. Reconfigure, rebuild, and reinstall after changing it:
+
+```sh
+cmake --preset dev -S . -DAZRAH_PLASMA_POPUP_BORDER_WIDTH=8
+./scripts/dev install
+```

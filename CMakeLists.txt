@@ -44,7 +44,19 @@ option(BUILD_WITH_QTQUICK "Build with Qt Quick features enabled" ON)
 option(WITH_DECORATIONS "Build Azrah window decorations for KWin" ON)
 option(WITH_WALLPAPERS "Install the inherited Breeze default wallpapers" OFF)
 option(BUILD_MISC "Build inherited Breeze compatibility utilities" OFF)
+option(BUILD_PLASMA_THEME "Build and install the Azrah Plasma desktop theme" ON)
+set(AZRAH_PLASMA_POPUP_BORDER_WIDTH "12" CACHE STRING
+    "Azrah Plasma popup border width in logical pixels (1-32)")
 option(AZRAH_INSTALL_GIT_HOOKS "Install repository-local formatting hooks" OFF)
+
+if(BUILD_PLASMA_THEME)
+    if(NOT AZRAH_PLASMA_POPUP_BORDER_WIDTH MATCHES "^[0-9]+$")
+        message(FATAL_ERROR "AZRAH_PLASMA_POPUP_BORDER_WIDTH must be an integer from 1 to 32")
+    endif()
+    if(AZRAH_PLASMA_POPUP_BORDER_WIDTH LESS 1 OR AZRAH_PLASMA_POPUP_BORDER_WIDTH GREATER 32)
+        message(FATAL_ERROR "AZRAH_PLASMA_POPUP_BORDER_WIDTH must be an integer from 1 to 32")
+    endif()
+endif()
 
 set(QT_NO_CREATE_VERSIONLESS_TARGETS ON)
 set(QT_NO_CREATE_VERSIONLESS_FUNCTIONS ON)
@@ -210,6 +222,10 @@ function(build_colors_and_cursors)
 endfunction()
 
 build_colors_and_cursors()
+
+if(BUILD_PLASMA_THEME)
+    add_subdirectory(plasma)
+endif()
 
 # add clang-format target for all our real source files
 file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES *.cpp *.h)
