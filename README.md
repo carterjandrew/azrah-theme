@@ -129,10 +129,11 @@ See [Development](docs/development.md) for dependencies, troubleshooting, and th
 
 ## Building without Nix
 
-Azrah uses the standard KDE CMake build. Both Qt versions are enabled by
-default; use `BUILD_QT5` and `BUILD_QT6` to control them. The current source
-requires Qt 6.11, KDE Frameworks 6.26, and compatible Plasma development
-libraries.
+Azrah uses the standard KDE CMake build. Manual builds enable Qt 6 by default;
+pass `-DBUILD_QT5=ON` to include the legacy Qt 5 style. The Nix package enables
+both versions and places the Qt 5 plugin in its separate `qt5` output. The
+current source requires Qt 6.11, KDE Frameworks 6.26, and compatible Plasma
+development libraries.
 
 ## Relationship to Breeze
 

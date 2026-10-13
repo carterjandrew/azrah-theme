@@ -18,6 +18,10 @@
           version = "6.8.80";
           src = self;
 
+          # Keep the legacy style in the dedicated qt5 output even though
+          # non-Nix builds now default to Qt 6 only.
+          cmakeFlags = (old.cmakeFlags or [ ]) ++ [ "-DBUILD_QT5=ON" ];
+
           postInstall = ''
             mkdir -p "$qt5/${pkgs.libsForQt5.qtbase.qtPluginPrefix}/styles"
             mv "$out/${pkgs.qt6.qtbase.qtPluginPrefix}/styles/azrah5.so" \
