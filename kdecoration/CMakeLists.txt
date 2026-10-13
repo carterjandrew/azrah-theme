@@ -20,7 +20,7 @@ add_library(azrahdecoration MODULE
     ${breezedecoration_config_PART_FORMS_HEADERS})
 
 set_target_properties(azrahdecoration PROPERTIES
-    OUTPUT_NAME org.kde.azrah
+    OUTPUT_NAME io.github.carterjandrew.azrah
 )
 
 target_link_libraries(azrahdecoration
@@ -36,8 +36,13 @@ target_link_libraries(azrahdecoration
         KF6::ColorScheme
 )
 
+# The named decoration style API was added after Plasma 6.7. Keep Azrah
+# buildable on the previous KDecoration3 API; that version never requests the
+# newer shadow-only style.
 if(KDecoration3_VERSION VERSION_GREATER_EQUAL "6.8.0")
-    target_compile_definitions(azrahdecoration PRIVATE AZRAH_HAVE_KDECORATION_STYLE)
+    target_compile_definitions(azrahdecoration PRIVATE AZRAH_HAVE_KDECORATION_STYLE=1)
+else()
+    target_compile_definitions(azrahdecoration PRIVATE AZRAH_HAVE_KDECORATION_STYLE=0)
 endif()
 
 install(TARGETS azrahdecoration DESTINATION ${KDE_INSTALL_PLUGINDIR}/${KDECORATION_PLUGIN_DIR})

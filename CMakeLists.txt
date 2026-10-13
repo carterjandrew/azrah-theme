@@ -36,10 +36,28 @@ include(KDEGitCommitHooks)
 include(GtkUpdateIconCache)
 
 
-option(BUILD_QT5 "Build Qt5 style" ON)
+option(BUILD_QT5 "Build the legacy Qt5 Azrah style" OFF)
 option(BUILD_QT6 "Build with Qt6" ON)
-option(BUILD_CURSOR "Build Breeze Cursor" ON)
+option(BUILD_STYLE "Build the Azrah application style" ON)
+option(BUILD_COLORS "Install the inherited Breeze color schemes" OFF)
+option(BUILD_CURSOR "Build the inherited Breeze cursor themes" OFF)
 option(BUILD_WITH_QTQUICK "Build with Qt Quick features enabled" ON)
+option(WITH_DECORATIONS "Build Azrah window decorations for KWin" ON)
+option(WITH_WALLPAPERS "Install the inherited Breeze default wallpapers" OFF)
+option(BUILD_MISC "Build inherited Breeze compatibility utilities" OFF)
+option(BUILD_PLASMA_THEME "Build and install the Azrah Plasma desktop theme" ON)
+set(AZRAH_PLASMA_POPUP_BORDER_WIDTH "12" CACHE STRING
+    "Azrah Plasma popup border width in logical pixels (1-32)")
+option(AZRAH_INSTALL_GIT_HOOKS "Install repository-local formatting hooks" OFF)
+
+if(BUILD_PLASMA_THEME)
+    if(NOT AZRAH_PLASMA_POPUP_BORDER_WIDTH MATCHES "^[0-9]+$")
+        message(FATAL_ERROR "AZRAH_PLASMA_POPUP_BORDER_WIDTH must be an integer from 1 to 32")
+    endif()
+    if(AZRAH_PLASMA_POPUP_BORDER_WIDTH LESS 1 OR AZRAH_PLASMA_POPUP_BORDER_WIDTH GREATER 32)
+        message(FATAL_ERROR "AZRAH_PLASMA_POPUP_BORDER_WIDTH must be an integer from 1 to 32")
+    endif()
+endif()
 
 set(QT_NO_CREATE_VERSIONLESS_TARGETS ON)
 set(QT_NO_CREATE_VERSIONLESS_FUNCTIONS ON)
@@ -94,7 +112,9 @@ function(build_Qt5)
     set(BREEZE_HAVE_KSTYLE ${KF5FrameworkIntegration_FOUND})
     set(BREEZE_HAVE_QTQUICK ${Qt5Quick_FOUND})
 
-    add_subdirectory(kstyle kstyle5)
+    if(BUILD_STYLE)
+        add_subdirectory(kstyle kstyle5)
+    endif()
     add_subdirectory(libbreezecommon libbreezecommon5)
 
     unset(QUERY_EXECUTABLE CACHE)
@@ -111,9 +131,6 @@ function(build_Qt6)
     if(UNIX AND NOT APPLE AND NOT ANDROID)
         find_package(Qt6 ${REQUIRED_QT_VERSION} CONFIG REQUIRED DBus)
         set(HAVE_QTDBUS ${Qt6DBus_FOUND})
-
-        option(WITH_DECORATIONS "Build Breeze window decorations for KWin" ON)
-        option(WITH_WALLPAPERS "Install Breeze default wallpapers" ON)
 
         find_package(KF6FrameworkIntegration ${KF6_MIN_VERSION} CONFIG )
         set_package_properties(KF${QT_MAJOR_VERSION}FrameworkIntegration PROPERTIES
@@ -151,9 +168,13 @@ function(build_Qt6)
     set(BREEZE_HAVE_KSTYLE ${KF6FrameworkIntegration_FOUND})
     set(BREEZE_HAVE_QTQUICK ${Qt6Quick_FOUND})
 
-    add_subdirectory(kstyle kstyle6)
+    if(BUILD_STYLE)
+        add_subdirectory(kstyle kstyle6)
+    endif()
     add_subdirectory(libbreezecommon libbreezecommon6)
-    add_subdirectory(misc)
+    if(BUILD_MISC)
+        add_subdirectory(misc)
+    endif()
 
     if(WITH_DECORATIONS)
         find_package(KDecoration3 REQUIRED)
@@ -162,8 +183,6 @@ function(build_Qt6)
     if (WITH_WALLPAPERS)
         add_subdirectory(wallpapers)
     endif()
-
-    ki18n_install(po)
 
     # create a Config.cmake and a ConfigVersion.cmake file and install them
     include(ECMSetupVersion)
@@ -195,7 +214,9 @@ function(build_colors_and_cursors)
     # it doesn't really matter at the end, because colors and cursors
     # only use ICONDIR and DATADIR which both do not depend on the version
     include(KDEInstallDirs)
-    add_subdirectory(colors)
+    if(BUILD_COLORS)
+        add_subdirectory(colors)
+    endif()
     if(BUILD_CURSOR)
         add_subdirectory(cursors)
     endif()
@@ -203,9 +224,15 @@ endfunction()
 
 build_colors_and_cursors()
 
+if(BUILD_PLASMA_THEME)
+    add_subdirectory(plasma)
+endif()
+
 # add clang-format target for all our real source files
 file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES *.cpp *.h)
 kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
-kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
+if(AZRAH_INSTALL_GIT_HOOKS)
+    kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
+endif()
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

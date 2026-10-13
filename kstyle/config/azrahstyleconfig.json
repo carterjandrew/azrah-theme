@@ -44,6 +44,7 @@
         "Description[zh_CN]": "调整窗口部件外观",
         "Description[zh_TW]": "修改元件的外觀",
         "Icon": "preferences-desktop-theme",
+        "License": "GPL-2.0-or-later",
         "Name": "Azrah Widget Style",
         "Name[ar]": "Azrah Widget Style",
         "Name[bg]": "Azrah Widget Style",
@@ -88,7 +89,9 @@
         "Name[zh_TW]": "Azrah Widget Style",
         "ServiceTypes": [
             "KCModule"
-        ]
+        ],
+        "Version": "6.8.80",
+        "Website": "https://github.com/carterjandrew/my-kde-theme"
     },
     "X-KDE-Keywords": "azrah,widget,style",
     "X-KDE-Keywords[ar]": "نمط,ودجات,نسيم",

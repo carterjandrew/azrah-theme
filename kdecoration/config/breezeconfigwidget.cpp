@@ -36,18 +36,24 @@ ConfigWidget::ConfigWidget(QObject *parent, const KPluginMetaData &data, const Q
     connect(m_ui.drawBorderOnMaximizedWindows, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
     connect(m_ui.drawBackgroundGradient, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
     connect(m_ui.roundedCorners, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
+    connect(m_ui.hideTitleBar, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
 
     // track shadows changes
     connect(m_ui.shadowSize, SIGNAL(currentIndexChanged(int)), SLOT(updateChanged()));
     connect(m_ui.shadowStrength, SIGNAL(valueChanged(int)), SLOT(updateChanged()));
     connect(m_ui.shadowColor, &KColorButton::changed, this, &ConfigWidget::updateChanged);
     connect(m_ui.drawOutline, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
+    connect(m_ui.customOutlineWidthEnabled, &QAbstractButton::clicked, this, &ConfigWidget::updateChanged);
+    connect(m_ui.customOutlineWidthEnabled, &QAbstractButton::toggled, m_ui.customOutlineWidth, &QWidget::setEnabled);
+    connect(m_ui.customOutlineWidth, qOverload<int>(&QSpinBox::valueChanged), this, &ConfigWidget::updateChanged);
 
     // track exception changes
     connect(m_ui.exceptions, &ExceptionListWidget::changed, this, &ConfigWidget::updateChanged);
 
     // set formatting
     m_ui.drawBorderOnMaximizedWindowsHelpLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
+    m_ui.hideTitleBarHelpLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
+    m_ui.customOutlineWidthHelpLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
 }
 
 //_________________________________________________________
@@ -64,6 +70,7 @@ void ConfigWidget::load()
     m_ui.outlineCloseButton->setChecked(m_internalSettings->outlineCloseButton());
     m_ui.drawBackgroundGradient->setChecked(m_internalSettings->drawBackgroundGradient());
     m_ui.roundedCorners->setChecked(m_internalSettings->roundedCorners());
+    m_ui.hideTitleBar->setChecked(m_internalSettings->hideTitleBar());
 
     // load shadows
     if (m_internalSettings->shadowSize() <= InternalSettings::ShadowVeryLarge) {
@@ -73,6 +80,9 @@ void ConfigWidget::load()
     }
 
     m_ui.drawOutline->setChecked(m_internalSettings->outlineEnabled());
+    m_ui.customOutlineWidthEnabled->setChecked(m_internalSettings->customOutlineWidthEnabled());
+    m_ui.customOutlineWidth->setValue(m_internalSettings->customOutlineWidth());
+    m_ui.customOutlineWidth->setEnabled(m_ui.customOutlineWidthEnabled->isChecked());
 
     m_ui.shadowStrength->setValue(qRound(qreal(m_internalSettings->shadowStrength() * 100) / 255));
     m_ui.shadowColor->setColor(m_internalSettings->shadowColor());
@@ -98,12 +108,15 @@ void ConfigWidget::save()
     m_internalSettings->setDrawBorderOnMaximizedWindows(m_ui.drawBorderOnMaximizedWindows->isChecked());
     m_internalSettings->setDrawBackgroundGradient(m_ui.drawBackgroundGradient->isChecked());
     m_internalSettings->setRoundedCorners(m_ui.roundedCorners->isChecked());
+    m_internalSettings->setHideTitleBar(m_ui.hideTitleBar->isChecked());
 
     m_internalSettings->setShadowSize(m_ui.shadowSize->currentIndex());
     m_internalSettings->setShadowStrength(qRound(qreal(m_ui.shadowStrength->value() * 255) / 100));
     m_internalSettings->setShadowColor(m_ui.shadowColor->color());
 
     m_internalSettings->setOutlineEnabled(m_ui.drawOutline->isChecked());
+    m_internalSettings->setCustomOutlineWidthEnabled(m_ui.customOutlineWidthEnabled->isChecked());
+    m_internalSettings->setCustomOutlineWidth(m_ui.customOutlineWidth->value());
 
     // save configuration
     m_internalSettings->save();
@@ -124,7 +137,7 @@ void ConfigWidget::save()
 
     // needed for breeze style to reload shadows
     {
-        QDBusMessage message(QDBusMessage::createSignal("/AzrahDecoration", "org.kde.Azrah.Style", "reparseConfiguration"));
+        QDBusMessage message(QDBusMessage::createSignal("/AzrahDecoration", "io.github.carterjandrew.Azrah.Style", "reparseConfiguration"));
         QDBusConnection::sessionBus().send(message);
     }
 }
@@ -143,11 +156,15 @@ void ConfigWidget::defaults()
     m_ui.drawBorderOnMaximizedWindows->setChecked(m_internalSettings->drawBorderOnMaximizedWindows());
     m_ui.drawBackgroundGradient->setChecked(m_internalSettings->drawBackgroundGradient());
     m_ui.roundedCorners->setChecked(m_internalSettings->roundedCorners());
+    m_ui.hideTitleBar->setChecked(m_internalSettings->hideTitleBar());
 
     m_ui.shadowSize->setCurrentIndex(m_internalSettings->shadowSize());
     m_ui.shadowStrength->setValue(qRound(qreal(m_internalSettings->shadowStrength() * 100) / 255));
     m_ui.shadowColor->setColor(m_internalSettings->shadowColor());
     m_ui.drawOutline->setChecked(m_internalSettings->outlineEnabled());
+    m_ui.customOutlineWidthEnabled->setChecked(m_internalSettings->customOutlineWidthEnabled());
+    m_ui.customOutlineWidth->setValue(m_internalSettings->customOutlineWidth());
+    m_ui.customOutlineWidth->setEnabled(m_ui.customOutlineWidthEnabled->isChecked());
 }
 
 //_______________________________________________
@@ -173,6 +190,8 @@ void ConfigWidget::updateChanged()
         modified = true;
     } else if (m_ui.roundedCorners->isChecked() != m_internalSettings->roundedCorners()) {
         modified = true;
+    } else if (m_ui.hideTitleBar->isChecked() != m_internalSettings->hideTitleBar()) {
+        modified = true;
 
         // shadows
     } else if (m_ui.shadowSize->currentIndex() != m_internalSettings->shadowSize()) {
@@ -182,6 +201,10 @@ void ConfigWidget::updateChanged()
     } else if (m_ui.shadowColor->color() != m_internalSettings->shadowColor()) {
         modified = true;
     } else if (m_ui.drawOutline->isChecked() != m_internalSettings->outlineEnabled()) {
+        modified = true;
+    } else if (m_ui.customOutlineWidthEnabled->isChecked() != m_internalSettings->customOutlineWidthEnabled()) {
+        modified = true;
+    } else if (m_ui.customOutlineWidth->value() != m_internalSettings->customOutlineWidth()) {
         modified = true;
         // exceptions
     } else if (m_ui.exceptions->isChanged()) {

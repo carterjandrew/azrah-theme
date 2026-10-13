@@ -63,6 +63,6 @@ install(FILES sc-apps-breeze-settings.svgz
 if(KF6KCMUtils_VERSION VERSION_GREATER_EQUAL "6.27.0")
     add_test(NAME azrahstyleconfig_smoketest COMMAND kcmshell6 -style Azrah --smoke-test kstyle_config/azrahstyleconfig)
     set_tests_properties(azrahstyleconfig_smoketest PROPERTIES
-        ENVIRONMENT_MODIFICATION QT_PLUGIN_PATH=path_list_prepend:${CMAKE_BINARY_DIR}/bin
+        ENVIRONMENT_MODIFICATION "QT_PLUGIN_PATH=path_list_prepend:${CMAKE_BINARY_DIR}/bin;QT_QPA_PLATFORM=set:offscreen"
     )
 endif()

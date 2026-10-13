@@ -44,6 +44,7 @@
         "Description[zh_CN]": "调整窗口装饰外观",
         "Description[zh_TW]": "修改視窗裝飾的外觀",
         "Icon": "preferences-system-windows",
+        "License": "GPL-2.0-or-later",
         "Name": "Azrah Window Decoration",
         "Name[ar]": "Azrah Window Decoration",
         "Name[az]": "Azrah Window Decoration",
@@ -90,7 +91,9 @@
         "Name[zh_TW]": "Azrah Window Decoration",
         "ServiceTypes": [
             "KCModule"
-        ]
+        ],
+        "Version": "6.8.80",
+        "Website": "https://github.com/carterjandrew/my-kde-theme"
     },
     "X-KDE-Keywords": "azrah,decoration",
     "X-KDE-Keywords[ar]": "زخرفة,نسيم",

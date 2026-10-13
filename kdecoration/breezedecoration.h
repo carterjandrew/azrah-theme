@@ -68,6 +68,7 @@ public:
     //@{
     QColor titleBarColor() const;
     QColor fontColor() const;
+    QColor outlineColor() const;
     //@}
 
     //*@name maximization modes
@@ -102,6 +103,7 @@ private:
 
     void createButtons();
     void paintTitleBar(QPainter *painter, const QRectF &repaintRegion);
+    void paintOutline(QPainter *painter, const QRectF &repaintRegion);
     void updateShadow();
     std::shared_ptr<KDecoration3::DecorationShadow> createShadowObject(const float strengthScale);
     void setScaledCornerRadius();
@@ -109,6 +111,7 @@ private:
     //*@name border size
     //@{
     qreal borderSize(bool bottom, qreal scale) const;
+    qreal outlineThickness(qreal scale) const;
     inline bool hasBorders() const;
     inline bool hasNoBorders() const;
     inline bool hasNoSideBorders() const;
@@ -130,7 +133,7 @@ private:
     qreal m_shadowOpacity = 0;
 
     //*frame corner radius, scaled according to DPI
-    qreal m_scaledCornerRadius = 3;
+    qreal m_scaledCornerRadius = 0;
 };
 
 bool Decoration::hasBorders() const
@@ -200,11 +203,12 @@ bool Decoration::isBottomEdge() const
 
 bool Decoration::hideTitleBar() const
 {
-#ifdef AZRAH_HAVE_KDECORATION_STYLE
-    return style() == KDecoration3::Style::Shadow || (m_internalSettings->hideTitleBar() && !window()->isShaded());
-#else
-    return m_internalSettings->hideTitleBar() && !window()->isShaded();
+#if AZRAH_HAVE_KDECORATION_STYLE
+    if (style() == KDecoration3::Style::Shadow) {
+        return true;
+    }
 #endif
+    return m_internalSettings->hideTitleBar() && !window()->isShaded();
 }
 
 bool Decoration::outlinesEnabled() const

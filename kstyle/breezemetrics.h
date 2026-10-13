@@ -39,7 +39,7 @@ struct Metrics {
 
     // frames
     static constexpr int Frame_FrameWidth = 2;
-    static constexpr int Frame_FrameRadius = 5;
+    static constexpr int Frame_FrameRadius = 0;
 
     // layout
     static constexpr int Layout_TopLevelMarginWidth = 10;
@@ -87,7 +87,7 @@ struct Metrics {
     static constexpr int CheckBox_Size = 20;
     static constexpr int CheckBox_FocusMarginWidth = 2;
     static constexpr int CheckBox_ItemSpacing = 4;
-    static constexpr int CheckBox_Radius = Frame_FrameRadius - 1;
+    static constexpr int CheckBox_Radius = 0;
 
     // menubar items
     static constexpr int MenuBarItem_MarginWidth = 10;

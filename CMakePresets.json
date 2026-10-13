@@ -1,0 +1,48 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "Azrah Qt 6 development",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_INSTALL_PREFIX": "$env{HOME}/.local",
+        "BUILD_TESTING": true,
+        "BUILD_QT5": false,
+        "BUILD_QT6": true,
+        "BUILD_STYLE": true,
+        "BUILD_COLORS": false,
+        "BUILD_CURSOR": false,
+        "BUILD_MISC": false,
+        "BUILD_PLASMA_THEME": true,
+        "AZRAH_PLASMA_POPUP_BORDER_WIDTH": "12",
+        "BUILD_WITH_QTQUICK": true,
+        "WITH_DECORATIONS": true,
+        "WITH_WALLPAPERS": false
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

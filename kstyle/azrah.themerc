@@ -1,0 +1,7 @@
+[Misc]
+Name=Azrah
+ConfigPage=kstyle_config/azrahstyleconfig
+Comment=A sharp, system-color-aware widget style derived from Breeze
+
+[KDE]
+WidgetStyle=Azrah

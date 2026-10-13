@@ -39,8 +39,18 @@
       <default>true</default>
     </entry>
 
+    <entry name="CustomOutlineWidthEnabled" type = "Bool">
+      <default>false</default>
+    </entry>
+
+    <entry name="CustomOutlineWidth" type = "Int">
+      <default>1</default>
+      <min>1</min>
+      <max>32</max>
+    </entry>
+
     <entry name="RoundedCorners" type = "Bool">
-      <default>true</default>
+      <default>false</default>
     </entry>
   </group>
 
@@ -101,7 +111,7 @@
 
     <!-- hide title bar -->
     <entry name="HideTitleBar" type = "Bool">
-       <default>false</default>
+       <default>true</default>
     </entry>
 
     <!-- window specific settings -->

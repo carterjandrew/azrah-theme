@@ -37,6 +37,6 @@ kcmutils_generate_desktop_file(kcm_azrahdecoration)
 if(KF6KCMUtils_VERSION VERSION_GREATER_EQUAL "6.27.0")
     add_test(NAME kcm_azrahdecoration_smoketest COMMAND kcmshell6 -style Azrah --smoke-test ${KDECORATION_KCM_PLUGIN_DIR}/kcm_azrahdecoration)
     set_tests_properties(kcm_azrahdecoration_smoketest PROPERTIES
-        ENVIRONMENT_MODIFICATION QT_PLUGIN_PATH=path_list_prepend:${CMAKE_BINARY_DIR}/bin
+        ENVIRONMENT_MODIFICATION "QT_PLUGIN_PATH=path_list_prepend:${CMAKE_BINARY_DIR}/bin;QT_QPA_PLATFORM=set:offscreen"
     )
 endif()

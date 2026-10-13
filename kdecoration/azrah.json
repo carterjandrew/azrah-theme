@@ -1,0 +1,19 @@
+{
+    "KPlugin": {
+        "Description": "Azrah window decoration for the Plasma Desktop, derived from Breeze",
+        "EnabledByDefault": true,
+        "License": "GPL-2.0-or-later",
+        "Name": "Azrah",
+        "Version": "0.1.0",
+        "Website": "https://github.com/carterjandrew/my-kde-theme"
+    },
+    "X-KDE-ConfigModule": "kcm_azrahdecoration",
+    "org.kde.kdecoration3": {
+        "blur": false,
+        "recommendedBorderSize": "Normal",
+        "styles": [
+            "shadow",
+            "titled"
+        ]
+    }
+}

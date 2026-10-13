@@ -89,28 +89,9 @@ void ShadowHelper::reset()
 //_______________________________________________________
 bool ShadowHelper::registerWidget(QWidget *widget, bool force)
 {
-    // make sure widget is not already registered
-    if (_widgets.contains(widget)) {
-        return false;
-    }
-
-    // check if widget qualifies
-    if (!(force || acceptWidget(widget))) {
-        return false;
-    }
-
-    // try to create shadow directly
-    installShadows(widget);
-    _widgets.insert(widget);
-
-    // install event filter
-    widget->removeEventFilter(this);
-    widget->installEventFilter(this);
-
-    // connect destroy signal
-    connect(widget, &QObject::destroyed, this, &ShadowHelper::widgetDeleted);
-
-    return true;
+    Q_UNUSED(widget)
+    Q_UNUSED(force)
+    return false;
 }
 
 //_______________________________________________________
@@ -179,66 +160,8 @@ bool ShadowHelper::eventFilter(QObject *object, QEvent *event)
 //_______________________________________________________
 TileSet ShadowHelper::shadowTiles(QWidget *widget)
 {
-    CompositeShadowParams params = lookupShadowParams(StyleConfigData::shadowSize());
-
-    if (params.isNone()) {
-        return TileSet();
-    } else if (_shadowTiles.isValid()) {
-        return _shadowTiles;
-    }
-
-    const qreal dpr = devicePixelRatio(widget);
-    params *= dpr;
-
-    auto withOpacity = [](const QColor &color, qreal opacity) -> QColor {
-        QColor c(color);
-        c.setAlphaF(opacity);
-        return c;
-    };
-
-    const QColor color = StyleConfigData::shadowColor();
-    const qreal strength = static_cast<qreal>(StyleConfigData::shadowStrength()) / 255.0;
-
-    const QSize boxSize =
-        BoxShadowRenderer::calculateMinimumBoxSize(params.shadow1.radius).expandedTo(BoxShadowRenderer::calculateMinimumBoxSize(params.shadow2.radius));
-
-    const qreal frameRadius = _helper->frameRadius();
-
-    BoxShadowRenderer shadowRenderer;
-    shadowRenderer.setBorderRadius(frameRadius);
-    shadowRenderer.setBoxSize(boxSize);
-
-    shadowRenderer.addShadow(params.shadow1.offset, params.shadow1.radius, withOpacity(color, params.shadow1.opacity * strength));
-    shadowRenderer.addShadow(params.shadow2.offset, params.shadow2.radius, withOpacity(color, params.shadow2.opacity * strength));
-
-    QImage shadowTexture = shadowRenderer.render();
-
-    const QRect outerRect(QPoint(0, 0), shadowTexture.size());
-
-    QRect boxRect(QPoint(0, 0), boxSize);
-    boxRect.moveCenter(outerRect.center());
-
-    // Mask out inner rect.
-    QPainter painter(&shadowTexture);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    const QMargins margins = QMargins(boxRect.left() - outerRect.left() - Metrics::Shadow_Overlap - params.offset.x(),
-                                      boxRect.top() - outerRect.top() - Metrics::Shadow_Overlap - params.offset.y(),
-                                      outerRect.right() - boxRect.right() - Metrics::Shadow_Overlap + params.offset.x(),
-                                      outerRect.bottom() - boxRect.bottom() - Metrics::Shadow_Overlap + params.offset.y());
-
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::black);
-    painter.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-    painter.drawRoundedRect(outerRect - margins, frameRadius, frameRadius);
-
-    // We're done.
-    painter.end();
-
-    const QPoint innerRectTopLeft = outerRect.center();
-    _shadowTiles = TileSet(QPixmap::fromImage(std::move(shadowTexture)), innerRectTopLeft.x(), innerRectTopLeft.y(), 1, 1);
-
-    return _shadowTiles;
+    Q_UNUSED(widget)
+    return TileSet();
 }
 
 //_______________________________________________________

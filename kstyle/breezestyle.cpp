@@ -152,7 +152,8 @@ public:
     //* paint
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
     {
-        painter->setRenderHints(QPainter::Antialiasing);
+        painter->setRenderHint(QPainter::Antialiasing, false);
+        const bool selected = option.showDecorationSelected && (option.state & QStyle::State_Selected);
         // if the app sets an item delegate that isn't the default, use its drawing...
         if (_proxy && _proxy->metaObject()->className() != QStringLiteral("QComboBoxDelegate")) {
             _proxy.data()->paint(painter, option, index);
@@ -160,22 +161,26 @@ public:
         }
 
         // otherwise we draw the selected/highlighted background ourselves.
-        if (option.showDecorationSelected && (option.state & QStyle::State_Selected)) {
+        if (selected) {
             using namespace Breeze;
 
             auto c = option.palette.brush((option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled, HighlightColor).color();
 
             painter->setPen(c);
-            c.setAlphaF(c.alphaF() * Metrics::Blend_Value);
             painter->setBrush(c);
-            auto radius = Metrics::Frame_FrameRadius - (0.5 * PenWidth::Frame);
-            painter->drawRoundedRect(QRectF(option.rect).adjusted(0.5, 0.5, -0.5, -0.5), radius, radius);
+            painter->drawRect(QRectF(option.rect).adjusted(0.5, 0.5, -0.5, -0.5));
         }
 
         // and ask the base class to do everything else for us besides the selected/highlighted part which we just did
         auto opt = option;
         opt.showDecorationSelected = false;
         opt.state &= ~QStyle::State_Selected;
+        if (selected) {
+            const QColor highlightedText = option.palette.color((option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled,
+                                                                 QPalette::HighlightedText);
+            opt.palette.setColor(QPalette::Text, highlightedText);
+            opt.palette.setColor(QPalette::WindowText, highlightedText);
+        }
 
         QItemDelegate::paint(painter, opt, index);
     }
@@ -273,18 +278,18 @@ Style::Style()
 #endif
 {
 #if HAVE_QTDBUS
-    // use DBus connection to update on breeze configuration change
+    // Use D-Bus to update on Azrah configuration changes.
     auto dbus = QDBusConnection::sessionBus();
     dbus.connect(QString(),
                  QStringLiteral("/AzrahStyle"),
-                 QStringLiteral("org.kde.Azrah.Style"),
+                 QStringLiteral("io.github.carterjandrew.Azrah.Style"),
                  QStringLiteral("reparseConfiguration"),
                  this,
                  SLOT(configurationChanged()));
 
     dbus.connect(QString(),
                  QStringLiteral("/AzrahDecoration"),
-                 QStringLiteral("org.kde.Azrah.Style"),
+                 QStringLiteral("io.github.carterjandrew.Azrah.Style"),
                  QStringLiteral("reparseConfiguration"),
                  this,
                  SLOT(configurationChanged()));
@@ -5355,6 +5360,8 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
             textRole = QPalette::WindowText;
         }
 
+    } else if (sunken) {
+        textRole = QPalette::HighlightedText;
     } else if (hasFocus) {
         textRole = QPalette::ButtonText;
     } else {
@@ -5434,7 +5441,13 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
         }
 
         const qreal dpr = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
-        const auto pixmap = _helper->coloredIcon(buttonOption->icon, buttonOption->palette, iconSize, dpr, iconMode, iconState);
+        QPalette iconPalette(buttonOption->palette);
+        if (sunken && enabled) {
+            const QColor highlightedText = iconPalette.color(QPalette::HighlightedText);
+            iconPalette.setColor(QPalette::ButtonText, highlightedText);
+            iconPalette.setColor(QPalette::WindowText, highlightedText);
+        }
+        const auto pixmap = _helper->coloredIcon(buttonOption->icon, iconPalette, iconSize, dpr, iconMode, iconState);
         drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
     }
 
@@ -5656,7 +5669,13 @@ bool Style::drawToolButtonLabelControl(const QStyleOption *option, QPainter *pai
             }
 
             const qreal dpr = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
-            const QPixmap pixmap = _helper->coloredIcon(toolButtonOption->icon, toolButtonOption->palette, iconSize, dpr, iconMode, iconState);
+            QPalette iconPalette(toolButtonOption->palette);
+            if (sunken && enabled) {
+                const QColor highlightedText = iconPalette.color(QPalette::HighlightedText);
+                iconPalette.setColor(QPalette::ButtonText, highlightedText);
+                iconPalette.setColor(QPalette::WindowText, highlightedText);
+            }
+            const QPixmap pixmap = _helper->coloredIcon(toolButtonOption->icon, iconPalette, iconSize, dpr, iconMode, iconState);
             drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
         }
     }
@@ -5664,7 +5683,9 @@ bool Style::drawToolButtonLabelControl(const QStyleOption *option, QPainter *pai
     // render text
     if (hasText) {
         QPalette::ColorRole textRole(QPalette::ButtonText);
-        if (flat) {
+        if (sunken) {
+            textRole = QPalette::HighlightedText;
+        } else if (flat) {
             textRole = QPalette::WindowText;
         }
 
@@ -5858,7 +5879,7 @@ bool Style::drawMenuBarItemControl(const QStyleOption *option, QPainter *painter
     const bool useStrongFocus(StyleConfigData::menuItemDrawStrongFocus());
 
     painter->save();
-    painter->setRenderHints(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     // render hover and focus
     if (useStrongFocus && (selected || sunken)) {
@@ -5869,11 +5890,9 @@ bool Style::drawMenuBarItemControl(const QStyleOption *option, QPainter *painter
             color = _helper->hoverColor(palette);
         }
 
-        const qreal radius = _helper->frameRadius(PenWidth::Frame);
-
         painter->setBrush(color);
         painter->setPen(Qt::NoPen);
-        painter->drawRoundedRect(rect, radius, radius);
+        painter->drawRect(rect);
     }
 
     /*
@@ -6629,7 +6648,7 @@ bool Style::drawFocusFrame(const QStyleOption *option, QPainter *painter, const 
     QRect outerRect = option->rect;
 
     qreal innerRadius = Metrics::Frame_FrameRadius;
-    qreal outerRadius = innerRadius + vmargin;
+    qreal outerRadius = 0;
 
     QPainterPath focusFramePath;
     focusFramePath.setFillRule(Qt::OddEvenFill);
@@ -6775,7 +6794,9 @@ bool Style::drawFocusFrame(const QStyleOption *option, QPainter *painter, const 
 
     auto outerColor = _helper->alphaColor(option->palette.highlight().color(), Metrics::Blend_Value);
 
-    painter->setRenderHint(QPainter::Antialiasing);
+    const bool semanticCircle = qobject_cast<const QRadioButton *>(targetWidget) || qobject_cast<const QSlider *>(targetWidget)
+        || qobject_cast<const QDial *>(targetWidget);
+    painter->setRenderHint(QPainter::Antialiasing, semanticCircle);
     painter->fillPath(focusFramePath, outerColor);
     return true;
 }
@@ -6784,7 +6805,7 @@ bool Style::drawFocusFrame(const QStyleOption *option, QPainter *painter, const 
 bool Style::drawRubberBandControl(const QStyleOption *option, QPainter *painter, const QWidget *) const
 {
     painter->save();
-    painter->setRenderHints(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
 
     const auto &palette(option->palette);
     const auto outline = KColorUtils::lighten(palette.color(HighlightColor));
@@ -6793,7 +6814,7 @@ bool Style::drawRubberBandControl(const QStyleOption *option, QPainter *painter,
 
     painter->setPen(outline);
     painter->setBrush(background);
-    painter->drawRoundedRect(_helper->strokedRect(option->rect), Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius);
+    painter->drawRect(_helper->strokedRect(option->rect));
 
     painter->restore();
     return true;
@@ -7914,8 +7935,10 @@ bool Style::drawComboBoxComplexControl(const QStyleOptionComplex *option, QPaint
             }
         } else if (empty || !enabled) {
             arrowColor = _helper->arrowColor(option->palette, QPalette::Disabled, QPalette::ButtonText);
+        } else if (down || checked) {
+            arrowColor = option->palette.color(QPalette::HighlightedText);
         } else if (activeFocus && !hovered) {
-            arrowColor = option->palette.color(QPalette::WindowText);
+            arrowColor = option->palette.color(QPalette::ButtonText);
         } else {
             arrowColor = _helper->arrowColor(option->palette, QPalette::ButtonText);
         }

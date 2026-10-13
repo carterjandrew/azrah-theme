@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+build_dir="$repo_root/build/dev"
+install_prefix=${AZRAH_INSTALL_PREFIX:-"${HOME}/.local"}
+environment_file="${XDG_CONFIG_HOME:-"${HOME}/.config"}/environment.d/azrah.conf"
+
+usage() {
+    printf '%s\n' \
+        "Usage: scripts/dev <doctor|configure|build|test|install|uninstall>" \
+        "" \
+        "AZRAH_INSTALL_PREFIX may override the default install prefix (~/.local)."
+}
+
+doctor() {
+    local failed=0
+    local command_name
+    for command_name in cmake ninja pkg-config; do
+        if command -v "$command_name" >/dev/null 2>&1; then
+            printf 'ok      %s\n' "$command_name"
+        else
+            printf 'missing %s\n' "$command_name"
+            failed=1
+        fi
+    done
+
+    for command_name in plasma-apply-desktoptheme plasmoidviewer; do
+        if command -v "$command_name" >/dev/null 2>&1; then
+            printf 'ok      %s (Plasma theme preview)\n' "$command_name"
+        else
+            printf 'optional %s (needed only for Plasma theme preview)\n' "$command_name"
+        fi
+    done
+
+    mkdir -p -- "$repo_root/build/doctor"
+    if (cd -- "$repo_root/build/doctor" && cmake --find-package -DNAME=ECM -DCOMPILER_ID=GNU -DLANGUAGE=CXX -DMODE=EXIST >/dev/null 2>&1); then
+        printf 'ok      ECM (Extra CMake Modules)\n'
+    else
+        printf 'missing ECM (Extra CMake Modules)\n'
+        failed=1
+    fi
+
+    if command -v pacman >/dev/null 2>&1; then
+        printf '\nArch dependency command:\n'
+        printf '  sudo pacman -S --needed extra-cmake-modules ninja qt6-base qt6-declarative frameworkintegration kcolorscheme kconfig kcoreaddons kguiaddons ki18n kiconthemes kcmutils kwindowsystem kdecoration\n'
+    fi
+
+    return "$failed"
+}
+
+configure() {
+    cmake --preset dev -S "$repo_root" -DCMAKE_INSTALL_PREFIX="$install_prefix"
+}
+
+build() {
+    [[ -f "$build_dir/build.ninja" ]] || configure
+    cmake --build --preset dev
+}
+
+test_build() {
+    build
+    ctest --preset dev
+}
+
+installed_plugin_dir() {
+    local manifest="$build_dir/install_manifest.txt"
+    local style_plugin
+
+    [[ -f "$manifest" ]] || {
+        printf 'No install manifest found at %s.\n' "$manifest" >&2
+        return 1
+    }
+
+    style_plugin=$(sed -n '/\/styles\/azrah6\.so$/p' "$manifest" | head -n 1)
+    [[ -n "$style_plugin" ]] || {
+        printf 'The install manifest does not contain the Azrah style plugin.\n' >&2
+        return 1
+    }
+
+    style_plugin=$(dirname -- "$(dirname -- "$style_plugin")")
+    case "$style_plugin" in
+        "$install_prefix"/*) printf '%s\n' "$style_plugin" ;;
+        *) printf 'Plugin directory is outside %s: %s\n' "$install_prefix" "$style_plugin" >&2; return 1 ;;
+    esac
+}
+
+install_build() {
+    local plugin_dir
+
+    build
+    cmake --install "$build_dir"
+    plugin_dir=$(installed_plugin_dir)
+
+    if [[ "$install_prefix" == "${HOME}/.local" ]]; then
+        mkdir -p -- "$(dirname -- "$environment_file")"
+        printf 'QT_PLUGIN_PATH=%s${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}\n' "$plugin_dir" >"$environment_file"
+        printf '%s\n' "$environment_file" >"$build_dir/azrah-extra-install-manifest.txt"
+    else
+        printf 'Custom prefix installed. Add %s to QT_PLUGIN_PATH.\n' "$plugin_dir"
+    fi
+
+    command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6
+    printf '\nAzrah installed in %s. Qt plugin directory: %s\n' "$install_prefix" "$plugin_dir"
+    printf 'Select the Azrah Plasma Style in System Settings or run: plasma-apply-desktoptheme azrah\n'
+    printf 'Log out and back in after the first install so Plasma inherits QT_PLUGIN_PATH.\n'
+}
+
+uninstall_build() {
+    local manifest="$build_dir/install_manifest.txt"
+    [[ -f "$manifest" ]] || {
+        printf 'No install manifest found at %s; nothing was removed.\n' "$manifest" >&2
+        return 1
+    }
+
+    while IFS= read -r installed_file; do
+        case "$installed_file" in
+            "$install_prefix"/*) rm -f -- "$installed_file" ;;
+            *) printf 'Refusing to remove path outside %s: %s\n' "$install_prefix" "$installed_file" >&2; return 1 ;;
+        esac
+    done <"$manifest"
+
+    if [[ -f "$build_dir/azrah-extra-install-manifest.txt" ]]; then
+        while IFS= read -r installed_file; do
+            [[ "$installed_file" == "$environment_file" ]] || {
+                printf 'Refusing unexpected extra manifest path: %s\n' "$installed_file" >&2
+                return 1
+            }
+            rm -f -- "$installed_file"
+        done <"$build_dir/azrah-extra-install-manifest.txt"
+    fi
+
+    command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6
+    printf 'Removed files owned by the Azrah development install. Log out and back in to clear the plugin environment.\n'
+}
+
+case "${1:-}" in
+    doctor) doctor ;;
+    configure) configure ;;
+    build) build ;;
+    test) test_build ;;
+    install) install_build ;;
+    uninstall) uninstall_build ;;
+    *) usage; exit 2 ;;
+esac
